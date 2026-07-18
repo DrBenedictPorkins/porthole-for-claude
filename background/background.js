@@ -1,5 +1,5 @@
 /**
- * Foxhole for Claude - Background Script
+ * Porthole for Claude - Background Script
  * Main coordinator for Claude API, tool execution, and sidebar communication
  */
 /* global ClaudeAPI, InteractionObserver, ApiObserver, SiteKnowledge, ContentSanitizer, BROWSER_TOOLS, getToolByName, isHighRiskTool, executeTool, addToConsoleBuffer, addToErrorBuffer, addToWebsocketBuffer, getNetworkRequests, clearAllNetworkRequests, getCustomRequestHeaders, getBlockedUrlPatterns, passiveObserverEnabled */
@@ -22,7 +22,7 @@
     if (debugLogging) {
       _debugLogBuffer.push(entry);
       if (_debugLogBuffer.length > _DEBUG_MAX_BUFFER) _debugLogBuffer.shift();
-      browser.storage.local.set({ foxholeDebugLogs_bg: _debugLogBuffer.slice(-_DEBUG_PERSIST_COUNT) }).catch(() => {});
+      browser.storage.local.set({ portholeDebugLogs_bg: _debugLogBuffer.slice(-_DEBUG_PERSIST_COUNT) }).catch(() => {});
     }
     if (level === 'ERROR') {
       console.error('[BG]', ...args);
@@ -154,7 +154,7 @@
   // Expose workflowRecording for tool-router.js
   window.workflowRecording = workflowRecording;
 
-  const WORKFLOWS_KEY = 'foxhole_workflows';
+  const WORKFLOWS_KEY = 'porthole_workflows';
   window.WORKFLOWS_KEY = WORKFLOWS_KEY;
 
   async function getStoredWorkflows() {
@@ -224,7 +224,7 @@
     if (window.SiteKnowledge && typeof window.SiteKnowledge._cleanupOldPartitions === 'function') {
       window.SiteKnowledge._cleanupOldPartitions().catch(() => {});
     }
-    debugLog('INFO', 'Foxhole for Claude background script initialized');
+    debugLog('INFO', 'Porthole for Claude background script initialized');
   }
 
   // Listen for keyboard shortcut commands

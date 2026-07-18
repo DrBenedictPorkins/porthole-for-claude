@@ -565,7 +565,7 @@ function finalizeMessage(contentElement, finalText, callbacks = {}) {
           btn.className = 'choice-btn';
           btn.textContent = option;
           btn.addEventListener('click', () => {
-            document.dispatchEvent(new CustomEvent('foxhole-choice-selected', { detail: { text: option } }));
+            document.dispatchEvent(new CustomEvent('porthole-choice-selected', { detail: { text: option } }));
             choicesDiv.remove();
           });
           choicesDiv.appendChild(btn);

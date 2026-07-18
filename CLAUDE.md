@@ -1,4 +1,4 @@
-# Foxhole for Claude — Chrome Extension
+# Porthole for Claude — Chrome Extension
 
 ## What this is
 
@@ -37,7 +37,7 @@ Raw JS/CSS/HTML — no bundler, no build step.
 ## Testing
 
 1. `chrome://extensions` → Developer mode → Load unpacked → select this directory
-2. Open any tab → click Foxhole icon → side panel opens
+2. Open any tab → click Porthole icon → side panel opens
 3. Service Worker errors: `chrome://extensions` → click "Service Worker" link
 4. Sidebar errors: right-click sidebar → Inspect
 

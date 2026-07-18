@@ -1,5 +1,5 @@
 /**
- * Foxhole for Claude - Sidebar UI
+ * Porthole for Claude - Sidebar UI
  * Main coordinator that wires together modular components.
  * Handles state management, settings, and event listener setup.
  */
@@ -26,7 +26,7 @@
     if (_sidebarDebugLogging) {
       _sidebarDebugBuffer.push(entry);
       if (_sidebarDebugBuffer.length > _SIDEBAR_DEBUG_MAX) _sidebarDebugBuffer.shift();
-      browser.storage.local.set({ foxholeDebugLogs_sidebar: _sidebarDebugBuffer.slice(-_SIDEBAR_DEBUG_PERSIST) }).catch(() => {});
+      browser.storage.local.set({ portholeDebugLogs_sidebar: _sidebarDebugBuffer.slice(-_SIDEBAR_DEBUG_PERSIST) }).catch(() => {});
     }
     if (level === 'ERROR') {
       console.error('[Sidebar]', ...args);
@@ -308,8 +308,8 @@
   async function initTabTracking() {
     try {
       // Restore persisted state from previous sidebar session
-      const data = await browser.storage.local.get('foxhole_sidebar_state');
-      const persisted = data.foxhole_sidebar_state;
+      const data = await browser.storage.local.get('porthole_sidebar_state');
+      const persisted = data.porthole_sidebar_state;
       if (persisted) {
         const cutoff = Date.now() - 24 * 60 * 60 * 1000;
         for (const [tabId, tabState] of Object.entries(persisted)) {
@@ -418,7 +418,7 @@
       };
     }
     try {
-      await browser.storage.local.set({ foxhole_sidebar_state: toSave });
+      await browser.storage.local.set({ porthole_sidebar_state: toSave });
     } catch (err) {
       console.error('[Persist] Failed to save sidebar state:', err);
     }
@@ -781,7 +781,7 @@
     stopBtn.addEventListener('click', handleStopGeneration);
 
     // Choice buttons (rendered by stream-renderer when Claude outputs <choices>)
-    document.addEventListener('foxhole-choice-selected', (e) => {
+    document.addEventListener('porthole-choice-selected', (e) => {
       const text = e.detail?.text;
       if (text && !isStreaming) {
         userInput.value = text;

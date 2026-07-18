@@ -185,7 +185,7 @@ function openPayloadTab(toolName, toolInput) {
   }).join('\n');
 
   const html = `<!DOCTYPE html>
-<html><head><meta charset="utf-8"><title>${toolName} — Foxhole Payload</title>
+<html><head><meta charset="utf-8"><title>${toolName} — Porthole Payload</title>
 <style>
   body { background: #1a1a1a; color: #d4d4d4; font-family: -apple-system, sans-serif; margin: 0; padding: 32px; }
   h1 { font-size: 18px; color: #fff; margin: 0 0 24px; }

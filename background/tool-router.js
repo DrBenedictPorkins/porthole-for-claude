@@ -1,7 +1,7 @@
 /**
- * Foxhole for Claude - Tool Router
+ * Porthole for Claude - Tool Router
  * Routes tool calls to appropriate handlers: content script or browser APIs
- * Adapted from FoxHole Debug Bridge background.js and handlers.ts
+ * Adapted from Porthole Debug Bridge background.js and handlers.ts
  */
 
 // ==========================================================================
@@ -769,7 +769,7 @@ async function handleCreateMarkdown(params) {
     ? customFilename.replace(/\.md$/i, '')
     : 'Claude Report';
 
-  const key = 'foxhole_viewer_' + Date.now();
+  const key = 'porthole_viewer_' + Date.now();
   await browser.storage.local.set({ [key]: { type: 'markdown', title, content } });
 
   const viewerUrl = browser.runtime.getURL('viewer/viewer.html') + '#' + key;
@@ -822,7 +822,7 @@ ${html}
 </html>`;
   }
 
-  const key = 'foxhole_viewer_' + Date.now();
+  const key = 'porthole_viewer_' + Date.now();
   await browser.storage.local.set({ [key]: { type: 'html', content: fullHtml } });
 
   const viewerUrl = browser.runtime.getURL('viewer/viewer.html') + '#' + key;

@@ -1,5 +1,5 @@
 #!/usr/bin/env bash
-# scripts/release.sh — Cut a versioned release of Foxhole for Claude (Chrome)
+# scripts/release.sh — Cut a versioned release of Porthole for Claude (Chrome)
 #
 # Convention: manifest.json always carries the NEXT version (the one in active
 # development). Cutting a release means tagging the current version, then
@@ -104,7 +104,7 @@ git checkout develop
 
 # ── Build Chrome zip ───────────────────────────────────────────────────────────
 
-ZIP="foxhole-claude-${RELEASE}.zip"
+ZIP="porthole-claude-${RELEASE}.zip"
 rm -f "$ZIP"
 
 echo "→ Building $ZIP..."

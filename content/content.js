@@ -1,7 +1,7 @@
 /**
- * Foxhole for Claude - Content Script
+ * Porthole for Claude - Content Script
  * Handles DOM manipulation commands from background script
- * Adapted from FoxHole Debug Bridge content.js
+ * Adapted from Porthole Debug Bridge content.js
  */
 
 (function() {
@@ -80,7 +80,7 @@
     if (_contentDebugLogging) {
       _contentDebugBuffer.push(entry);
       if (_contentDebugBuffer.length > _CONTENT_DEBUG_MAX) _contentDebugBuffer.shift();
-      browser.storage.local.set({ foxholeDebugLogs_content: _contentDebugBuffer.slice(-_CONTENT_DEBUG_PERSIST) }).catch(() => {});
+      browser.storage.local.set({ portholeDebugLogs_content: _contentDebugBuffer.slice(-_CONTENT_DEBUG_PERSIST) }).catch(() => {});
     }
     if (level === 'ERROR') {
       console.error('[Content]', ...args);
@@ -877,17 +877,17 @@
 
     // Inject overlay styles
     const styleEl = document.createElement('style');
-    styleEl.id = 'foxhole-region-styles';
+    styleEl.id = 'porthole-region-styles';
     styleEl.textContent = `
-      #foxhole-region-overlay {
+      #porthole-region-overlay {
         position: fixed; top: 0; left: 0; width: 100%; height: 100%; z-index: 2147483647;
         cursor: crosshair; background: rgba(0,0,0,0.15);
       }
-      #foxhole-region-box {
+      #porthole-region-box {
         position: fixed; border: 2px solid #C4A052; background: rgba(196,160,82,0.1);
         pointer-events: none; z-index: 2147483647; display: none;
       }
-      #foxhole-region-instructions {
+      #porthole-region-instructions {
         position: fixed; top: 12px; left: 50%; transform: translateX(-50%);
         background: rgba(0,0,0,0.8); color: #fff; padding: 6px 14px; border-radius: 6px;
         font-size: 13px; z-index: 2147483647; pointer-events: none; white-space: nowrap;
@@ -896,15 +896,15 @@
     document.head.appendChild(styleEl);
 
     regionOverlay = document.createElement('div');
-    regionOverlay.id = 'foxhole-region-overlay';
+    regionOverlay.id = 'porthole-region-overlay';
     document.body.appendChild(regionOverlay);
 
     regionBox = document.createElement('div');
-    regionBox.id = 'foxhole-region-box';
+    regionBox.id = 'porthole-region-box';
     document.body.appendChild(regionBox);
 
     const instructions = document.createElement('div');
-    instructions.id = 'foxhole-region-instructions';
+    instructions.id = 'porthole-region-instructions';
     instructions.textContent = 'Click and drag to select a region — Press Esc to cancel';
     document.body.appendChild(instructions);
 
@@ -920,10 +920,10 @@
     regionSelecting = false;
     regionStartX = 0;
     regionStartY = 0;
-    document.getElementById('foxhole-region-styles')?.remove();
-    document.getElementById('foxhole-region-overlay')?.remove();
-    document.getElementById('foxhole-region-box')?.remove();
-    document.getElementById('foxhole-region-instructions')?.remove();
+    document.getElementById('porthole-region-styles')?.remove();
+    document.getElementById('porthole-region-overlay')?.remove();
+    document.getElementById('porthole-region-box')?.remove();
+    document.getElementById('porthole-region-instructions')?.remove();
     regionOverlay = null;
     regionBox = null;
     document.removeEventListener('mousemove', onRegionMouseMove);
@@ -1979,15 +1979,15 @@
   function handleDialog(params) {
     const { accept = true, promptText = '', drain = false } = params || {};
 
-    window.__foxholeDialogLog = window.__foxholeDialogLog || [];
+    window.__portholeDialogLog = window.__portholeDialogLog || [];
 
     if (drain) {
-      const logged = window.__foxholeDialogLog.splice(0);
+      const logged = window.__portholeDialogLog.splice(0);
       return { drained: true, dialogs: logged };
     }
 
-    if (!window.__foxholeDialogOriginals) {
-      window.__foxholeDialogOriginals = {
+    if (!window.__portholeDialogOriginals) {
+      window.__portholeDialogOriginals = {
         alert: window.alert,
         confirm: window.confirm,
         prompt: window.prompt,
@@ -1995,19 +1995,19 @@
     }
 
     window.alert = function(msg) {
-      window.__foxholeDialogLog.push({ type: 'alert', message: String(msg ?? ''), at: Date.now() });
+      window.__portholeDialogLog.push({ type: 'alert', message: String(msg ?? ''), at: Date.now() });
     };
     window.confirm = function(msg) {
-      window.__foxholeDialogLog.push({ type: 'confirm', message: String(msg ?? ''), result: accept, at: Date.now() });
+      window.__portholeDialogLog.push({ type: 'confirm', message: String(msg ?? ''), result: accept, at: Date.now() });
       return accept;
     };
     window.prompt = function(msg, defaultValue) {
       const result = accept ? (promptText || defaultValue || '') : null;
-      window.__foxholeDialogLog.push({ type: 'prompt', message: String(msg ?? ''), defaultValue, result, at: Date.now() });
+      window.__portholeDialogLog.push({ type: 'prompt', message: String(msg ?? ''), defaultValue, result, at: Date.now() });
       return result;
     };
 
-    const pending = window.__foxholeDialogLog.splice(0);
+    const pending = window.__portholeDialogLog.splice(0);
     return { installed: true, accept, promptText, pendingDialogs: pending };
   }
 
@@ -2254,7 +2254,7 @@
     const el = e.target.closest('a, button, [role="button"], input[type="submit"], input[type="button"], input[type="checkbox"], input[type="radio"], summary') || e.target;
     if (el.tagName === 'INPUT' && /^(text|email|password|search|tel|url|number|)$/.test(el.type || '')) return;
     if (el.tagName === 'TEXTAREA') return;
-    if (el.closest('[id^="foxhole"]')) return;
+    if (el.closest('[id^="porthole"]')) return;
     const selector = getBestRecordingSelector(el);
     const label = el.textContent?.trim().replace(/\s+/g, ' ').slice(0, 50) || el.getAttribute('aria-label') || selector;
     sendRecordingStep({ tool: 'click_element', input: { selector }, _label: `Click "${label}"` });

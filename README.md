@@ -1,4 +1,4 @@
-# Foxhole for Claude — Chrome
+# Porthole for Claude — Chrome
 
 A Chrome side panel where Claude learns how each website works and remembers it across sessions.
 
@@ -20,7 +20,7 @@ Instead of rediscovering the same selectors, endpoints, and interaction patterns
 1. Clone or download this repo
 2. `chrome://extensions` → Enable **Developer mode** (top right)
 3. Click **Load unpacked** → select this folder
-4. Click the Foxhole icon in the toolbar → side panel opens
+4. Click the Porthole icon in the toolbar → side panel opens
 5. Settings → enter your [Anthropic API key](https://console.anthropic.com/)
 
 ## Tools

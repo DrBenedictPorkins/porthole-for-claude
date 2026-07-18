@@ -70,8 +70,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Token usage tracking with cache efficiency display
 - User-driven selection mode for marking page elements
 
-[Unreleased]: https://github.com/DrBenedictPorkins/foxhole-claude/compare/v1.4.0...HEAD
-[1.4.0]: https://github.com/DrBenedictPorkins/foxhole-claude/compare/v1.3.0...v1.4.0
-[1.3.0]: https://github.com/DrBenedictPorkins/foxhole-claude/compare/v1.2.0...v1.3.0
-[1.2.0]: https://github.com/DrBenedictPorkins/foxhole-claude/compare/v1.0.0...v1.2.0
-[1.0.0]: https://github.com/DrBenedictPorkins/foxhole-claude/releases/tag/v1.0.0
+[Unreleased]: https://github.com/DrBenedictPorkins/porthole-claude/compare/v1.4.0...HEAD
+[1.4.0]: https://github.com/DrBenedictPorkins/porthole-claude/compare/v1.3.0...v1.4.0
+[1.3.0]: https://github.com/DrBenedictPorkins/porthole-claude/compare/v1.2.0...v1.3.0
+[1.2.0]: https://github.com/DrBenedictPorkins/porthole-claude/compare/v1.0.0...v1.2.0
+[1.0.0]: https://github.com/DrBenedictPorkins/porthole-claude/releases/tag/v1.0.0

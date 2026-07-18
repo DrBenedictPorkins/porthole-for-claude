@@ -1,6 +1,6 @@
 # Privacy Policy
 
-**Foxhole for Claude** - Firefox Browser Extension
+**Porthole for Claude** - Firefox Browser Extension
 
 Last updated: February 10, 2026
 
@@ -8,7 +8,7 @@ Last updated: February 10, 2026
 
 ## Overview
 
-Foxhole for Claude is a browser extension that enables you to interact with web pages through natural language conversation with Claude, Anthropic's AI assistant. This document explains how the extension handles your data.
+Porthole for Claude is a browser extension that enables you to interact with web pages through natural language conversation with Claude, Anthropic's AI assistant. This document explains how the extension handles your data.
 
 **Key Points:**
 - All data is stored locally on your device
@@ -134,7 +134,7 @@ For privacy-related questions or concerns about this extension, please open an i
 
 ## Summary
 
-Foxhole for Claude is designed with privacy as a priority:
+Porthole for Claude is designed with privacy as a priority:
 
 1. **Local-first**: Your data stays on your device
 2. **Minimal communication**: Only talks to Anthropic's API

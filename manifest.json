@@ -11,13 +11,10 @@
     "cookies",
     "clipboardRead",
     "clipboardWrite",
-    "notifications",
     "webNavigation",
     "history",
     "downloads",
     "downloads.open",
-    "sessions",
-    "bookmarks",
     "browsingData",
     "sidePanel"
   ],

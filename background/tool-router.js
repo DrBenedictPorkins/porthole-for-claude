@@ -777,7 +777,7 @@ async function handleCreateMarkdown(params) {
 
   return {
     success: true,
-    message: 'Report opened in new tab.',
+    message: `Report "${title}" opened in a new tab. It is NOT saved to disk — it lives in browser storage and disappears if the tab is closed. Tell the user to copy the content if they need to keep it.`,
   };
 }
 

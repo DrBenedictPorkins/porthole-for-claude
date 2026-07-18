@@ -1,0 +1,71 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 128 128">
+  <!-- Foxhole — no ears, pure void with glowing eyes -->
+
+  <defs>
+    <radialGradient id="bgSharp" cx="50%" cy="50%" r="50%">
+      <stop offset="0%" style="stop-color:#1A1008"/>
+      <stop offset="100%" style="stop-color:#060402"/>
+    </radialGradient>
+  </defs>
+
+  <rect width="128" height="128" rx="22" fill="url(#bgSharp)"/>
+
+  <!-- Rim rings — centered, slightly larger without ears competing -->
+  <ellipse cx="64" cy="64" rx="58" ry="54" fill="#5C2C0A" opacity="0.5"/>
+  <ellipse cx="64" cy="64" rx="54" ry="50" fill="#3D1E08"/>
+  <ellipse cx="64" cy="64" rx="50" ry="46" fill="#2A1405"/>
+  <ellipse cx="64" cy="64" rx="46" ry="42" fill="#1A0C02"/>
+
+  <!-- The void -->
+  <ellipse cx="64" cy="64" rx="42" ry="38" fill="#000000"/>
+
+  <!-- Jagged rim notches -->
+  <polygon points="24,66 30,59 28,72" fill="#000000" opacity="0.5"/>
+  <polygon points="32,76 36,69 34,80" fill="#000000" opacity="0.35"/>
+  <polygon points="104,66 98,59 100,72" fill="#000000" opacity="0.5"/>
+  <polygon points="96,76 92,69 94,80" fill="#000000" opacity="0.35"/>
+
+  <defs>
+    <!-- Wide soft bloom — large spreading glow -->
+    <filter id="bloom" x="-100%" y="-100%" width="300%" height="300%">
+      <feGaussianBlur stdDeviation="7"/>
+    </filter>
+    <!-- Tight halo just around iris -->
+    <filter id="halo" x="-60%" y="-60%" width="220%" height="220%">
+      <feGaussianBlur stdDeviation="3"/>
+    </filter>
+    <!-- Left eye: almond, ~25° sinister slant — inner corner drops, outer rises -->
+    <clipPath id="leftEyeClip">
+      <path d="M 50,74 C 46,58 29,54 24,58 C 27,73 44,77 50,74 Z"/>
+    </clipPath>
+    <clipPath id="rightEyeClip">
+      <path d="M 78,74 C 82,58 99,54 104,58 C 101,73 84,77 78,74 Z"/>
+    </clipPath>
+  </defs>
+
+  <!-- LEFT EYE -->
+  <path d="M 50,74 C 46,58 29,54 24,58 C 27,73 44,77 50,74 Z"
+        fill="#CC0000" opacity="0.7"
+        transform="translate(37,66) scale(2.4) translate(-37,-66)"
+        filter="url(#bloom)"/>
+  <path d="M 50,74 C 46,58 29,54 24,58 C 27,73 44,77 50,74 Z"
+        fill="#FF2200" opacity="0.8"
+        transform="translate(37,66) scale(1.6) translate(-37,-66)"
+        filter="url(#halo)"/>
+  <path d="M 50,74 C 46,58 29,54 24,58 C 27,73 44,77 50,74 Z" fill="#FFE000"/>
+  <path d="M 33,57 C 33,55 41,55 41,57 C 41,63 39,70 37,72 C 35,70 33,63 33,57 Z" fill="#000000" clip-path="url(#leftEyeClip)"/>
+  <ellipse cx="37" cy="58" rx="1.5" ry="0.8" fill="white" opacity="0.35" clip-path="url(#leftEyeClip)"/>
+
+  <!-- RIGHT EYE -->
+  <path d="M 78,74 C 82,58 99,54 104,58 C 101,73 84,77 78,74 Z"
+        fill="#CC0000" opacity="0.7"
+        transform="translate(91,66) scale(2.4) translate(-91,-66)"
+        filter="url(#bloom)"/>
+  <path d="M 78,74 C 82,58 99,54 104,58 C 101,73 84,77 78,74 Z"
+        fill="#FF2200" opacity="0.8"
+        transform="translate(91,66) scale(1.6) translate(-91,-66)"
+        filter="url(#halo)"/>
+  <path d="M 78,74 C 82,58 99,54 104,58 C 101,73 84,77 78,74 Z" fill="#FFE000"/>
+  <path d="M 87,57 C 87,55 95,55 95,57 C 95,63 93,70 91,72 C 89,70 87,63 87,57 Z" fill="#000000" clip-path="url(#rightEyeClip)"/>
+  <ellipse cx="91" cy="58" rx="1.5" ry="0.8" fill="white" opacity="0.35" clip-path="url(#rightEyeClip)"/>
+</svg>

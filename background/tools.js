@@ -1,0 +1,1709 @@
+/**
+ * Foxhole for Claude - Tool Definitions
+ *
+ * Converted from FoxHole MCP tools to Claude API format.
+ * Key difference: MCP uses `inputSchema`, Claude uses `input_schema`
+ */
+
+const BROWSER_TOOLS = [
+  // ============================================================================
+  // TAB MANAGEMENT
+  // ============================================================================
+  {
+    name: 'list_tabs',
+    description: 'List all open browser tabs with their URLs and titles',
+    input_schema: {
+      type: 'object',
+      properties: {},
+    },
+  },
+  {
+    name: 'get_active_tab',
+    description: 'Get information about the currently active tab',
+    input_schema: {
+      type: 'object',
+      properties: {},
+    },
+  },
+  {
+    name: 'switch_tab',
+    description: 'Switch to a specific tab by ID',
+    input_schema: {
+      type: 'object',
+      properties: {
+        tabId: {
+          type: 'number',
+          description: 'The ID of the tab to switch to',
+        },
+      },
+      required: ['tabId'],
+    },
+  },
+  {
+    name: 'create_tab',
+    description: 'Create a new browser tab with optional URL',
+    input_schema: {
+      type: 'object',
+      properties: {
+        url: {
+          type: 'string',
+          description: 'URL to open in the new tab',
+        },
+        active: {
+          type: 'boolean',
+          description: 'Whether to make the new tab active',
+        },
+      },
+    },
+  },
+  {
+    name: 'close_tab',
+    description: 'Close a specific tab',
+    input_schema: {
+      type: 'object',
+      properties: {
+        tabId: {
+          type: 'number',
+          description: 'The ID of the tab to close',
+        },
+      },
+      required: ['tabId'],
+    },
+  },
+
+  // ============================================================================
+  // NAVIGATION
+  // ============================================================================
+  {
+    name: 'navigate',
+    description: 'Navigate to a URL in the current tab',
+    input_schema: {
+      type: 'object',
+      properties: {
+        url: {
+          type: 'string',
+          description: 'The URL to navigate to',
+        },
+      },
+      required: ['url'],
+    },
+  },
+  {
+    name: 'reload_page',
+    description: 'Reload the current page',
+    input_schema: {
+      type: 'object',
+      properties: {
+        bypassCache: {
+          type: 'boolean',
+          description: 'Whether to bypass the cache',
+        },
+      },
+    },
+  },
+  {
+    name: 'go_back',
+    description: 'Go back in browser history',
+    input_schema: {
+      type: 'object',
+      properties: {},
+    },
+  },
+  {
+    name: 'go_forward',
+    description: 'Go forward in browser history',
+    input_schema: {
+      type: 'object',
+      properties: {},
+    },
+  },
+  {
+    name: 'get_current_url',
+    description: 'Get the URL of the current page',
+    input_schema: {
+      type: 'object',
+      properties: {},
+    },
+  },
+  {
+    name: 'get_page_title',
+    description: 'Get the title of the current page',
+    input_schema: {
+      type: 'object',
+      properties: {},
+    },
+  },
+
+  // ============================================================================
+  // DOM READING
+  // ============================================================================
+  {
+    name: 'dom_stats',
+    description: 'Get DOM statistics (element count, depth, size) without full HTML. Always call this before get_page_content to check size.',
+    input_schema: {
+      type: 'object',
+      properties: {
+        frameId: {
+          type: 'number',
+          description: 'Frame ID for iframes (default: 0 = top frame)',
+        },
+        includeTags: {
+          type: 'boolean',
+          description: 'Include top 15 tag distribution (adds tokens, default false)',
+        },
+      },
+    },
+  },
+  {
+    name: 'get_page_content',
+    description: 'Get full page HTML. Can be very large - use dom_stats first to check size.',
+    input_schema: {
+      type: 'object',
+      properties: {
+        frameId: {
+          type: 'number',
+          description: 'Frame ID for iframes (default: 0 = top frame)',
+        },
+      },
+    },
+  },
+  {
+    name: 'get_dom_structure',
+    description: 'Get DOM structure at specified depth. Shows element hierarchy with child counts beyond depth limit. Use for exploring large pages without fetching full HTML.',
+    input_schema: {
+      type: 'object',
+      properties: {
+        frameId: {
+          type: 'number',
+          description: 'Frame ID for iframes (default: 0 = top frame)',
+        },
+        selector: {
+          type: 'string',
+          description: 'CSS selector to start from (default: body)',
+        },
+        depth: {
+          type: 'number',
+          description: 'How many levels deep to expand (default: 2)',
+        },
+      },
+    },
+  },
+  {
+    name: 'query_selector',
+    description: 'Query DOM elements using CSS selector. Returns matching elements with their tag, id, classes, and text content.',
+    input_schema: {
+      type: 'object',
+      properties: {
+        selector: {
+          type: 'string',
+          description: 'CSS selector',
+        },
+        frameId: {
+          type: 'number',
+          description: 'Frame ID for iframes (default: 0 = top frame)',
+        },
+      },
+      required: ['selector'],
+    },
+  },
+  {
+    name: 'get_element_properties',
+    description: 'Get properties of a DOM element',
+    input_schema: {
+      type: 'object',
+      properties: {
+        selector: {
+          type: 'string',
+          description: 'CSS selector for the element',
+        },
+        properties: {
+          type: 'array',
+          items: { type: 'string' },
+          description: 'Properties to retrieve (e.g., ["href", "src", "value"])',
+        },
+        frameId: {
+          type: 'number',
+          description: 'Frame ID for iframes (default: 0 = top frame)',
+        },
+      },
+      required: ['selector'],
+    },
+  },
+  {
+    name: 'get_computed_styles',
+    description: 'Get computed CSS styles for an element',
+    input_schema: {
+      type: 'object',
+      properties: {
+        selector: {
+          type: 'string',
+          description: 'CSS selector for the element',
+        },
+        styleProperties: {
+          type: 'array',
+          items: { type: 'string' },
+          description: 'Specific CSS properties to retrieve (e.g., ["color", "font-size"]). If not specified, returns common properties.',
+        },
+        frameId: {
+          type: 'number',
+          description: 'Frame ID for iframes (default: 0 = top frame)',
+        },
+      },
+      required: ['selector'],
+    },
+  },
+  {
+    name: 'get_element_bounds',
+    description: 'Get bounding rectangle (position and dimensions) of an element',
+    input_schema: {
+      type: 'object',
+      properties: {
+        selector: {
+          type: 'string',
+          description: 'CSS selector for the element',
+        },
+        frameId: {
+          type: 'number',
+          description: 'Frame ID for iframes (default: 0 = top frame)',
+        },
+      },
+      required: ['selector'],
+    },
+  },
+  {
+    name: 'list_frames',
+    description: 'List all frames (iframes) with URLs and frameIds.',
+    input_schema: {
+      type: 'object',
+      properties: {},
+    },
+  },
+
+  // ============================================================================
+  // ELEMENT INTERACTION
+  // ============================================================================
+  {
+    name: 'click_element',
+    description: 'Click on a DOM element. Use force:true for custom widgets (div[role="button"], dropdowns, drag handles) that need a full pointer/mouse event sequence instead of a plain click.',
+    input_schema: {
+      type: 'object',
+      properties: {
+        selector: {
+          type: 'string',
+          description: 'CSS selector or tref_N handle for the element to click',
+        },
+        force: {
+          type: 'boolean',
+          description: 'If true, dispatches full pointerdown→mousedown→pointerup→mouseup→click sequence. Use when plain click() does nothing on custom SPA widgets.',
+        },
+        frameId: {
+          type: 'number',
+          description: 'Frame ID for iframes (default: 0 = top frame)',
+        },
+      },
+      required: ['selector'],
+    },
+  },
+  {
+    name: 'type_text',
+    description: 'Type text into an input element. REPLACES existing content by default (clears field first).',
+    input_schema: {
+      type: 'object',
+      properties: {
+        selector: {
+          type: 'string',
+          description: 'CSS selector for the input element',
+        },
+        text: {
+          type: 'string',
+          description: 'Text to type',
+        },
+        append: {
+          type: 'boolean',
+          description: 'If true, append to existing text instead of replacing. Default: false (replaces)',
+        },
+        frameId: {
+          type: 'number',
+          description: 'Frame ID for iframes (default: 0 = top frame)',
+        },
+      },
+      required: ['selector', 'text'],
+    },
+  },
+  {
+    name: 'fill_form',
+    description: 'Fill a form with multiple field values at once',
+    input_schema: {
+      type: 'object',
+      properties: {
+        fields: {
+          type: 'object',
+          description: 'Object mapping CSS selectors to values. E.g., {"#name": "John", "#email": "john@example.com"}',
+        },
+      },
+      required: ['fields'],
+    },
+  },
+  {
+    name: 'scroll_to',
+    description: 'Scroll to a specific position or element',
+    input_schema: {
+      type: 'object',
+      properties: {
+        x: {
+          type: 'number',
+          description: 'X coordinate to scroll to',
+        },
+        y: {
+          type: 'number',
+          description: 'Y coordinate to scroll to',
+        },
+        selector: {
+          type: 'string',
+          description: 'CSS selector for element to scroll into view (takes precedence over x/y)',
+        },
+      },
+    },
+  },
+  {
+    name: 'hover_element',
+    description: 'Hover over a DOM element (trigger mouseenter/mouseover events)',
+    input_schema: {
+      type: 'object',
+      properties: {
+        selector: {
+          type: 'string',
+          description: 'CSS selector for the element to hover',
+        },
+        frameId: {
+          type: 'number',
+          description: 'Frame ID for iframes (default: 0 = top frame)',
+        },
+      },
+      required: ['selector'],
+    },
+  },
+  {
+    name: 'focus_element',
+    description: 'Focus on a DOM element',
+    input_schema: {
+      type: 'object',
+      properties: {
+        selector: {
+          type: 'string',
+          description: 'CSS selector for the element to focus',
+        },
+        frameId: {
+          type: 'number',
+          description: 'Frame ID for iframes (default: 0 = top frame)',
+        },
+      },
+      required: ['selector'],
+    },
+  },
+  {
+    name: 'press_key',
+    description: 'Simulate a key press on the focused element or document',
+    input_schema: {
+      type: 'object',
+      properties: {
+        key: {
+          type: 'string',
+          description: 'Key to press (e.g., "Enter", "Tab", "Escape", "a", "ArrowDown")',
+        },
+        modifiers: {
+          type: 'array',
+          items: { type: 'string' },
+          description: 'Modifier keys to hold (e.g., ["ctrl", "shift"])',
+        },
+        selector: {
+          type: 'string',
+          description: 'Optional CSS selector - focuses element before key press',
+        },
+        frameId: {
+          type: 'number',
+          description: 'Frame ID for iframes (default: 0 = top frame)',
+        },
+      },
+      required: ['key'],
+    },
+  },
+  {
+    name: 'select_option',
+    description: 'Select an option from a <select> dropdown',
+    input_schema: {
+      type: 'object',
+      properties: {
+        selector: {
+          type: 'string',
+          description: 'CSS selector for the <select> element',
+        },
+        value: {
+          type: 'string',
+          description: 'Value of the option to select',
+        },
+        text: {
+          type: 'string',
+          description: 'Text content of the option to select (alternative to value)',
+        },
+        frameId: {
+          type: 'number',
+          description: 'Frame ID for iframes (default: 0 = top frame)',
+        },
+      },
+      required: ['selector'],
+    },
+  },
+  {
+    name: 'set_checkbox',
+    description: 'Check or uncheck a checkbox/radio input',
+    input_schema: {
+      type: 'object',
+      properties: {
+        selector: {
+          type: 'string',
+          description: 'CSS selector for the checkbox/radio element',
+        },
+        checked: {
+          type: 'boolean',
+          description: 'Whether to check (true) or uncheck (false) the element',
+        },
+        frameId: {
+          type: 'number',
+          description: 'Frame ID for iframes (default: 0 = top frame)',
+        },
+      },
+      required: ['selector', 'checked'],
+    },
+  },
+
+  // ============================================================================
+  // SCREENSHOTS
+  // ============================================================================
+  {
+    name: 'take_screenshot',
+    description: 'Take a screenshot. By default returns base64 for viewing. Use saveTo to save directly to Downloads folder.',
+    input_schema: {
+      type: 'object',
+      properties: {
+        saveTo: {
+          type: 'string',
+          description: 'Filename to save to Downloads (e.g., "page-screenshot.png"). If provided, saves file instead of returning base64.',
+        },
+        format: {
+          type: 'string',
+          enum: ['png', 'jpeg'],
+          description: 'Image format (default: png)',
+        },
+      },
+    },
+  },
+  {
+    name: 'take_element_screenshot',
+    description: 'Take a screenshot of a specific element',
+    input_schema: {
+      type: 'object',
+      properties: {
+        selector: {
+          type: 'string',
+          description: 'CSS selector for the element to capture',
+        },
+        frameId: {
+          type: 'number',
+          description: 'Frame ID for iframes (default: 0 = top frame)',
+        },
+      },
+      required: ['selector'],
+    },
+  },
+  {
+    name: 'read_image',
+    description: 'Fetch an image from the page and return it for visual analysis. Use this to read text in images, analyze charts, or examine visual content. Accepts a CSS selector for an <img> element OR a direct image URL.',
+    input_schema: {
+      type: 'object',
+      properties: {
+        selector: {
+          type: 'string',
+          description: 'CSS selector for an <img> element on the page',
+        },
+        url: {
+          type: 'string',
+          description: 'Direct image URL. Use when you have the src but no reliable selector.',
+        },
+      },
+    },
+  },
+
+  // ============================================================================
+  // FILE OUTPUT - ONLY when user explicitly requests
+  // ============================================================================
+  {
+    name: 'create_markdown',
+    description: 'Save content as a markdown file to the user\'s Downloads folder. Use whenever the user asks to save, export, create, or generate a file/page/document from content. Do not use unprompted to silently log findings — reply in chat instead.',
+    input_schema: {
+      type: 'object',
+      properties: {
+        content: {
+          type: 'string',
+          description: 'Markdown content to save',
+        },
+        filename: {
+          type: 'string',
+          description: 'Filename without extension (default: "claude-output-{timestamp}")',
+        },
+      },
+      required: ['content'],
+    },
+  },
+  {
+    name: 'create_html',
+    description: 'Save content as an HTML file to the user\'s Downloads folder. Use when the user asks to create a page, or when rich formatting (tables, styled layout) is better than plain markdown. Prefer this over create_markdown when the output benefits from HTML rendering.',
+    input_schema: {
+      type: 'object',
+      properties: {
+        html: {
+          type: 'string',
+          description: 'HTML content. Can be body only (auto-wrapped) or complete document.',
+        },
+        title: {
+          type: 'string',
+          description: 'Page title (default: "Claude Report")',
+        },
+      },
+      required: ['html'],
+    },
+  },
+  {
+    name: 'open_download',
+    description: 'Open a previously downloaded file by filename. Searches Downloads folder and opens with default app.',
+    input_schema: {
+      type: 'object',
+      properties: {
+        filename: {
+          type: 'string',
+          description: 'Filename or partial filename to search for (e.g., "claude-report" or "report-2026-01-20")',
+        },
+      },
+      required: ['filename'],
+    },
+  },
+
+  // ============================================================================
+  // COOKIES
+  // ============================================================================
+  {
+    name: 'get_cookies',
+    description: 'Get cookies for current page.',
+    input_schema: {
+      type: 'object',
+      properties: {
+        url: {
+          type: 'string',
+          description: 'URL to get cookies for (default: current page URL)',
+        },
+      },
+    },
+  },
+  {
+    name: 'set_cookie',
+    description: 'Set a cookie',
+    input_schema: {
+      type: 'object',
+      properties: {
+        name: {
+          type: 'string',
+          description: 'Cookie name',
+        },
+        value: {
+          type: 'string',
+          description: 'Cookie value',
+        },
+        domain: {
+          type: 'string',
+          description: 'Cookie domain',
+        },
+        path: {
+          type: 'string',
+          description: 'Cookie path (default: /)',
+        },
+        secure: {
+          type: 'boolean',
+          description: 'Whether cookie is secure-only',
+        },
+        httpOnly: {
+          type: 'boolean',
+          description: 'Whether cookie is HTTP-only',
+        },
+        expirationDate: {
+          type: 'number',
+          description: 'Cookie expiration as Unix timestamp',
+        },
+      },
+      required: ['name', 'value'],
+    },
+  },
+  {
+    name: 'delete_cookie',
+    description: 'Delete a cookie',
+    input_schema: {
+      type: 'object',
+      properties: {
+        name: {
+          type: 'string',
+          description: 'Cookie name to delete',
+        },
+        url: {
+          type: 'string',
+          description: 'URL the cookie belongs to (default: current page URL)',
+        },
+      },
+      required: ['name'],
+    },
+  },
+
+  // ============================================================================
+  // STORAGE
+  // ============================================================================
+  {
+    name: 'get_local_storage',
+    description: 'Get all localStorage data for the current page.',
+    input_schema: {
+      type: 'object',
+      properties: {},
+    },
+  },
+  {
+    name: 'get_session_storage',
+    description: 'Get all sessionStorage data for the current page.',
+    input_schema: {
+      type: 'object',
+      properties: {},
+    },
+  },
+  {
+    name: 'set_storage_item',
+    description: 'Set a localStorage or sessionStorage item',
+    input_schema: {
+      type: 'object',
+      properties: {
+        key: {
+          type: 'string',
+          description: 'Storage key',
+        },
+        value: {
+          type: 'string',
+          description: 'Storage value',
+        },
+        storageType: {
+          type: 'string',
+          enum: ['local', 'session'],
+          description: 'Storage type (default: local)',
+        },
+      },
+      required: ['key', 'value'],
+    },
+  },
+  {
+    name: 'clear_storage',
+    description: 'Clear localStorage or sessionStorage',
+    input_schema: {
+      type: 'object',
+      properties: {
+        storageType: {
+          type: 'string',
+          enum: ['local', 'session', 'both'],
+          description: 'Which storage to clear (default: both)',
+        },
+      },
+    },
+  },
+
+  // ============================================================================
+  // BROWSING DATA & ADVANCED STORAGE
+  // ============================================================================
+  {
+    name: 'clear_browsing_data',
+    description: `Bulk clear browser data via browser.browsingData API.
+
+Clears one or more data types across all domains or for a specific time range.
+
+USE FOR: Clearing browser cache, cookies, history, form data, downloads, service workers, localStorage in bulk.`,
+    input_schema: {
+      type: 'object',
+      properties: {
+        dataTypes: {
+          type: 'array',
+          items: {
+            type: 'string',
+            enum: ['cache', 'cookies', 'history', 'formData', 'downloads', 'serviceWorkers', 'localStorage'],
+          },
+          description: 'Data types to clear (e.g., ["cache", "cookies"])',
+        },
+        since: {
+          type: 'number',
+          description: 'Only clear data from the last N minutes (e.g., 60 = last hour). Omit to clear all time.',
+        },
+        originTypes: {
+          type: 'string',
+          enum: ['unprotectedWeb', 'protectedWeb', 'extension'],
+          description: 'Origin type filter (default: unprotectedWeb)',
+        },
+      },
+      required: ['dataTypes'],
+    },
+  },
+  {
+    name: 'list_indexeddb',
+    description: 'List all IndexedDB databases on the current page. Returns database names and versions.',
+    input_schema: {
+      type: 'object',
+      properties: {},
+    },
+  },
+  {
+    name: 'clear_indexeddb',
+    description: 'Delete one or all IndexedDB databases on the current page.',
+    input_schema: {
+      type: 'object',
+      properties: {
+        name: {
+          type: 'string',
+          description: 'Specific database name to delete. Omit to delete ALL databases.',
+        },
+      },
+    },
+  },
+  {
+    name: 'list_cache_storage',
+    description: 'List all Cache Storage caches (Service Worker caches) on the current page.',
+    input_schema: {
+      type: 'object',
+      properties: {},
+    },
+  },
+  {
+    name: 'clear_cache_storage',
+    description: 'Delete one or all Cache Storage caches on the current page.',
+    input_schema: {
+      type: 'object',
+      properties: {
+        name: {
+          type: 'string',
+          description: 'Specific cache name to delete. Omit to delete ALL caches.',
+        },
+      },
+    },
+  },
+  {
+    name: 'search_history',
+    description: 'Search browser history for pages matching a query.',
+    input_schema: {
+      type: 'object',
+      properties: {
+        query: {
+          type: 'string',
+          description: 'Search text to match against URLs and titles',
+        },
+        maxResults: {
+          type: 'number',
+          description: 'Maximum results to return (default: 25)',
+        },
+        startTime: {
+          type: 'string',
+          description: 'Start of time range (ISO string or ms since epoch)',
+        },
+        endTime: {
+          type: 'string',
+          description: 'End of time range (ISO string or ms since epoch)',
+        },
+      },
+      required: ['query'],
+    },
+  },
+  {
+    name: 'delete_history',
+    description: `Delete browser history entries. Can delete a specific URL, a time range, or all history.
+
+Provide exactly ONE of: url, startTime+endTime, or all:true.`,
+    input_schema: {
+      type: 'object',
+      properties: {
+        url: {
+          type: 'string',
+          description: 'Delete history for this specific URL',
+        },
+        startTime: {
+          type: 'string',
+          description: 'Start of time range to delete (ISO string or ms since epoch). Requires endTime.',
+        },
+        endTime: {
+          type: 'string',
+          description: 'End of time range to delete (ISO string or ms since epoch). Requires startTime.',
+        },
+        all: {
+          type: 'boolean',
+          description: 'Set to true to delete ALL history',
+        },
+      },
+    },
+  },
+
+  // ============================================================================
+  // SCRIPT EXECUTION
+  // ============================================================================
+  {
+    name: 'execute_script',
+    description: `Execute JavaScript in page context with full DOM access.
+
+USE FOR: DOM queries, data extraction, element manipulation, reading page state, evaluating expressions.
+
+EXAMPLES:
+  // Simple expression
+  document.title
+
+  // Extract data
+  Array.from(document.querySelectorAll('.item')).map(el => el.textContent)
+
+  // Complex logic (wrap in IIFE)
+  (() => { const data = {}; /* logic */; return data; })()
+
+Returns the result of the last expression.`,
+    input_schema: {
+      type: 'object',
+      properties: {
+        code: {
+          type: 'string',
+          description: 'JavaScript code to execute. Returns the result of the last expression.',
+        },
+        frameId: {
+          type: 'number',
+          description: 'Frame ID for iframes (default: 0 = top frame)',
+        },
+      },
+      required: ['code'],
+    },
+  },
+
+  // ============================================================================
+  // WAITING
+  // ============================================================================
+  {
+    name: 'wait_for_element',
+    description: 'Wait for an element to appear in the DOM',
+    input_schema: {
+      type: 'object',
+      properties: {
+        selector: {
+          type: 'string',
+          description: 'CSS selector to wait for',
+        },
+        timeout: {
+          type: 'number',
+          description: 'Timeout in milliseconds (default: 5000)',
+        },
+        frameId: {
+          type: 'number',
+          description: 'Frame ID for iframes (default: 0 = top frame)',
+        },
+      },
+      required: ['selector'],
+    },
+  },
+  {
+    name: 'wait_for_navigation',
+    description: 'Wait for page navigation to complete',
+    input_schema: {
+      type: 'object',
+      properties: {
+        timeout: {
+          type: 'number',
+          description: 'Timeout in milliseconds (default: 30000)',
+        },
+      },
+    },
+  },
+  {
+    name: 'wait',
+    description: 'Wait for a specified duration',
+    input_schema: {
+      type: 'object',
+      properties: {
+        ms: {
+          type: 'number',
+          description: 'Milliseconds to wait',
+        },
+      },
+      required: ['ms'],
+    },
+  },
+
+  // ============================================================================
+  // NETWORK
+  // ============================================================================
+  {
+    name: 'get_network_requests',
+    description: 'Get captured network requests. Requires network capture to be enabled.',
+    input_schema: {
+      type: 'object',
+      properties: {
+        filter: {
+          type: 'string',
+          description: 'Filter requests by URL pattern (substring match)',
+        },
+        type: {
+          type: 'string',
+          enum: ['xmlhttprequest', 'document', 'script', 'stylesheet', 'image', 'font', 'other'],
+          description: 'Filter by request type. "xmlhttprequest" includes both XHR and fetch() calls.',
+        },
+        limit: {
+          type: 'number',
+          description: 'Maximum number of requests to return (default: 100)',
+        },
+      },
+    },
+  },
+  {
+    name: 'clear_network_requests',
+    description: 'Clear captured network requests',
+    input_schema: {
+      type: 'object',
+      properties: {},
+    },
+  },
+  {
+    name: 'get_network_request_detail',
+    description: 'Get full details of a network request by ID (headers, bodies).',
+    input_schema: {
+      type: 'object',
+      properties: {
+        requestId: {
+          type: 'string',
+          description: 'The request ID to fetch',
+        },
+      },
+      required: ['requestId'],
+    },
+  },
+  {
+    name: 'set_request_headers',
+    description: 'Set custom request headers for subsequent requests',
+    input_schema: {
+      type: 'object',
+      properties: {
+        headers: {
+          type: 'object',
+          description: 'Headers to set (key-value pairs)',
+        },
+      },
+      required: ['headers'],
+    },
+  },
+  {
+    name: 'block_urls',
+    description: 'Block specific URLs or patterns from loading',
+    input_schema: {
+      type: 'object',
+      properties: {
+        patterns: {
+          type: 'array',
+          items: { type: 'string' },
+          description: 'URL patterns to block (supports wildcards)',
+        },
+      },
+      required: ['patterns'],
+    },
+  },
+
+  // ============================================================================
+  // CLIPBOARD
+  // ============================================================================
+  {
+    name: 'read_clipboard',
+    description: 'Read text content from clipboard',
+    input_schema: {
+      type: 'object',
+      properties: {},
+    },
+  },
+  {
+    name: 'write_clipboard',
+    description: 'Write text content to clipboard',
+    input_schema: {
+      type: 'object',
+      properties: {
+        text: {
+          type: 'string',
+          description: 'Text to write to clipboard',
+        },
+      },
+      required: ['text'],
+    },
+  },
+
+  // ============================================================================
+  // BUFFER QUERY (for console, errors, websocket data)
+  // ============================================================================
+  {
+    name: 'query_buffer',
+    description: 'Query buffered data (console logs, errors, network, websocket) with JS transform to shape/filter results.',
+    input_schema: {
+      type: 'object',
+      properties: {
+        type: {
+          type: 'string',
+          enum: ['console', 'errors', 'network', 'websocket'],
+          description: 'Buffer type to query',
+        },
+        transform: {
+          type: 'string',
+          description: 'Required JS expression applied to data array. Examples: .filter(x => x.level === "error").slice(-20) or .sort((a,b) => b.duration - a.duration).slice(0,5)',
+        },
+      },
+      required: ['type', 'transform'],
+    },
+  },
+  {
+    name: 'clear_buffer',
+    description: 'Clear data buffers',
+    input_schema: {
+      type: 'object',
+      properties: {
+        dataType: {
+          type: 'string',
+          enum: ['console', 'network', 'websocket', 'errors', 'all'],
+          description: 'Specific data type to clear (default: all)',
+        },
+      },
+    },
+  },
+
+  // ============================================================================
+  // SITE SPECS (persistent knowledge for domains)
+  // ============================================================================
+  {
+    name: 'save_site_spec',
+    description: `Save or update a Site Spec for the current domain. Specs persist across sessions and are injected into future conversations on this site.
+
+If a spec with the same description already exists, it will be UPDATED with new content — so always reuse the same description to keep specs current.
+
+SAVE AFTER:
+- Discovering stable selectors ([data-testid], [aria-label], [role], IDs, data-attributes)
+- Identifying API endpoints from network traffic
+- Finding localStorage/sessionStorage keys
+- Figuring out a multi-step workflow that works
+
+DON'T SAVE:
+- Generic selectors (input, button, a, .btn)
+- Hashed class names (.css-1a2b3c, .sc-bdnxRM) — these break between deploys
+- One-time information — just tell the user
+
+GOOD: [data-testid="search"], #product-grid [role="listitem"], [aria-label="Add to cart"]
+BAD: .css-k008qs, input[type="text"], button.btn-primary
+
+Domain is auto-detected from the current tab.`,
+    input_schema: {
+      type: 'object',
+      properties: {
+        type: {
+          type: 'string',
+          enum: ['profile', 'dom', 'api', 'storage', 'shortcut'],
+          description: 'Type of spec: profile (site interaction model — ONE per domain, always read first), dom (CSS selectors), api (endpoints), storage (localStorage/cookies), shortcut (multi-step workflows)',
+        },
+        description: {
+          type: 'string',
+          description: 'One-line summary of what this spec documents (e.g., "Product search and filter selectors")',
+        },
+        content: {
+          type: 'string',
+          description: 'Technical content - selectors, endpoints, keys, or step sequences. Be specific and actionable.',
+        },
+      },
+      required: ['type', 'description', 'content'],
+    },
+  },
+
+  {
+    name: 'delete_site_spec',
+    description: `Delete a site spec that is broken, outdated, or no longer relevant.
+
+USE WHEN:
+- A selector no longer matches anything on the page
+- An API endpoint returns 404 or has changed
+- A workflow no longer works after a site redesign
+- A spec is redundant (covered by a newer spec)
+
+Domain is auto-detected from the current tab.`,
+    input_schema: {
+      type: 'object',
+      properties: {
+        spec_id: {
+          type: 'string',
+          description: 'The spec ID shown as "spec_id: ..." in the site knowledge section above the system prompt',
+        },
+        reason: {
+          type: 'string',
+          description: 'Brief reason for deletion (e.g., "selector no longer exists after site redesign")',
+        },
+      },
+      required: ['spec_id'],
+    },
+  },
+
+  // ============================================================================
+  // EXTERNAL FETCH (Background fetch without navigation)
+  // ============================================================================
+  {
+    name: 'fetch_url',
+    description: `Fetch a URL from the extension background — bypasses page CSP and CORS.
+
+TWO MODES:
+
+1. HTML mode (default): Fetches public pages, returns cleaned readable text via Readability. Good for documentation and reference material.
+
+2. Raw API mode (set method, headers, or body): Skips HTML parsing, returns raw JSON/text. Use this to call authenticated APIs by passing harvested auth headers (e.g., Cookie, Authorization, x-csrf-token from get_cookies/get_network_requests). This is the CSP bypass path — runs from the extension background, not the page.
+
+Example raw API call:
+  { url: "https://site.com/api/gql/Feed", method: "POST", headers: { "cookie": "session=abc; csrf=xyz", "x-csrf-token": "xyz", "content-type": "application/json" }, body: { operationName: "Feed", variables: {}, extensions: { persistedQuery: { version: 1, sha256Hash: "..." } } } }
+
+Harvest the exact headers from get_network_requests first — mirror them exactly.`,
+    input_schema: {
+      type: 'object',
+      properties: {
+        url: {
+          type: 'string',
+          description: 'The URL to fetch',
+        },
+        method: {
+          type: 'string',
+          description: 'HTTP method (GET, POST, PUT, PATCH, DELETE). Setting this enables raw API mode.',
+          enum: ['GET', 'POST', 'PUT', 'PATCH', 'DELETE'],
+        },
+        headers: {
+          type: 'object',
+          description: 'Custom request headers as key-value pairs. Use to pass auth cookies, CSRF tokens, etc.',
+        },
+        body: {
+          description: 'Request body. Object is JSON-serialized automatically. String is sent as-is.',
+        },
+        selector: {
+          type: 'string',
+          description: 'HTML mode only: CSS selector to extract specific content.',
+        },
+        maxLength: {
+          type: 'number',
+          description: 'HTML mode only: maximum characters to return (default: 15000)',
+        },
+      },
+      required: ['url'],
+    },
+  },
+
+  // ============================================================================
+  // ELEMENT MARKING (highlight & track selections using data attributes)
+  // ============================================================================
+  {
+    name: 'mark_elements',
+    description: `Mark DOM elements matching criteria with a data attribute for tracking and visual highlighting.
+
+Uses data-claude-marked attribute directly on elements. No event listeners needed.
+Marked elements can be queried later with get_marked_elements.
+
+Example: Mark all products under $50
+- selector: ".product-card"
+- filter: "el => parseFloat(el.querySelector('.price')?.textContent?.replace('$','') || 999) < 50"
+- label: "budget-items"`,
+    input_schema: {
+      type: 'object',
+      properties: {
+        selector: {
+          type: 'string',
+          description: 'CSS selector for candidate elements (e.g., ".product-card", "tr.item")'
+        },
+        filter: {
+          type: 'string',
+          description: 'Optional JS filter function body. Receives "el" as the element. Return true to mark. (e.g., "el.textContent.includes(\'Sale\')")'
+        },
+        label: {
+          type: 'string',
+          description: 'Label for this selection (e.g., "budget-items", "5-star-reviews"). Used to group/identify marks.'
+        },
+        style: {
+          type: 'string',
+          description: 'Optional CSS style for highlighting (default: "outline: 3px solid #FFD700; outline-offset: 2px;")'
+        }
+      },
+      required: ['selector', 'label'],
+    },
+  },
+  {
+    name: 'get_marked_elements',
+    description: `Get information about previously marked elements.
+
+Returns count and summary of elements marked with data-claude-marked attribute.
+Can filter by label to get specific selections.`,
+    input_schema: {
+      type: 'object',
+      properties: {
+        label: {
+          type: 'string',
+          description: 'Optional: filter by specific label. Omit to get all marked elements.'
+        },
+        include_text: {
+          type: 'boolean',
+          description: 'Include text content of marked elements (default: true, truncated to 100 chars each)'
+        }
+      },
+    },
+  },
+  {
+    name: 'clear_marked_elements',
+    description: `Remove marks from elements. Clears data-claude-marked attribute and highlight styles.`,
+    input_schema: {
+      type: 'object',
+      properties: {
+        label: {
+          type: 'string',
+          description: 'Optional: clear only elements with this label. Omit to clear ALL marks.'
+        }
+      },
+    },
+  },
+
+  // ============================================================================
+  // USER-DRIVEN SELECTION MODE
+  // Let user click elements to mark them instead of Claude analyzing DOM
+  // ============================================================================
+  {
+    name: 'toggle_selection_mode',
+    description: `Enter or exit visual selection mode. In this mode, user can click elements to mark them with a gold highlight.
+
+USE WHEN: User wants to "select", "mark", "highlight", or "pick" things on the page visually.
+
+HOW IT WORKS:
+1. Call with enable: true to enter selection mode
+2. User sees crosshair cursor, hovers show blue dashed outline
+3. User clicks elements to toggle selection (gold highlight)
+4. User presses Escape OR you call with enable: false to exit
+5. Use get_user_selections to retrieve what they marked
+
+This is much simpler than Claude-driven DOM analysis - user shows exactly what they want.`,
+    input_schema: {
+      type: 'object',
+      properties: {
+        enable: {
+          type: 'boolean',
+          description: 'true to enter selection mode, false to exit'
+        }
+      },
+      required: ['enable']
+    },
+  },
+  {
+    name: 'get_user_selections',
+    description: `Get all elements the user has marked using selection mode.
+
+Each item includes a "parent" field with the containing element's text - use this when the selection is a small part of a larger unit.`,
+    input_schema: {
+      type: 'object',
+      properties: {
+        include_html: {
+          type: 'boolean',
+          description: 'Include outerHTML snippet (default: false)'
+        },
+        include_text: {
+          type: 'boolean',
+          description: 'Include text content (default: true)'
+        },
+        include_parent: {
+          type: 'boolean',
+          description: 'Include parent container info (default: true)'
+        }
+      },
+    },
+  },
+  {
+    name: 'clear_user_selections',
+    description: `Clear all user selections (remove data-user-selected attribute from all elements).`,
+    input_schema: {
+      type: 'object',
+      properties: {},
+    },
+  },
+
+  // ============================================================================
+  // TEXT UTILITIES
+  // ============================================================================
+  {
+    name: 'clean_text',
+    description: 'Clean excessive blank lines in the focused text field or contentEditable element. Collapses 3+ consecutive newlines down to 2. If text is selected, only the selection is cleaned.',
+    input_schema: {
+      type: 'object',
+      properties: {},
+    },
+  },
+
+  // ============================================================================
+  // ACCESSIBILITY & ELEMENT DISCOVERY
+  // ============================================================================
+  {
+    name: 'get_accessibility_tree',
+    description: `Get a structured accessibility tree of the page. Returns interactive elements with stable tref_N handles that can be passed directly to click_element, type_text, hover_element, etc.
+
+Use this instead of get_page_content when finding interactive elements. Much cheaper than screenshots (text output only). Returns roles, labels, and bounds per element.
+
+Pass a tref_N handle as the selector in any interaction tool to target the element without re-querying the DOM.
+
+filter options:
+- "interactive" — only buttons, links, inputs, and ARIA widgets (recommended starting point)
+- "all" — every visible element
+- omit — interactive + semantic headings + elements with direct text`,
+    input_schema: {
+      type: 'object',
+      properties: {
+        filter: {
+          type: 'string',
+          enum: ['interactive', 'all'],
+          description: 'Which elements to include (default: interactive + semantic)',
+        },
+        selector: {
+          type: 'string',
+          description: 'CSS selector to scope the tree to a subtree (default: body)',
+        },
+        depth: {
+          type: 'number',
+          description: 'Maximum tree depth (default: 15)',
+        },
+        charLimit: {
+          type: 'number',
+          description: 'Stop after this many characters (useful for very large pages)',
+        },
+      },
+    },
+  },
+  {
+    name: 'find_elements',
+    description: `Find elements by natural language description. Scores all visible elements by how well their labels, aria-attributes, text content, and role match your query. Returns stable tref_N handles.
+
+Use when you know roughly what an element says or does but not its exact selector.
+
+Examples: "add to cart button", "email input", "search field", "submit", "close dialog"
+
+Returns top matches ranked by score. Pass the refId directly to click_element, type_text, etc.`,
+    input_schema: {
+      type: 'object',
+      properties: {
+        description: {
+          type: 'string',
+          description: 'Natural language description of the element to find',
+        },
+        maxResults: {
+          type: 'number',
+          description: 'Maximum number of results to return (default: 5)',
+        },
+        filter: {
+          type: 'string',
+          enum: ['interactive', 'all'],
+          description: 'Limit to interactive elements (default: interactive)',
+        },
+      },
+      required: ['description'],
+    },
+  },
+  {
+    name: 'fetch_with_session',
+    description: `Fetch a URL using the current page's cookies and session state.
+
+Unlike fetch_url (which runs from the background without auth), this runs from within the page context and includes the user's existing auth cookies, session tokens, and CSRF headers.
+
+USE FOR: Calling APIs on the same domain that require the user's auth. Discovering authenticated endpoints. Fetching data that requires session cookies.
+
+Same-origin requests: full cookie access. Cross-origin: subject to CORS rules of the target server.
+
+Returns status, headers, and response body (JSON-parsed if applicable).`,
+    input_schema: {
+      type: 'object',
+      properties: {
+        url: {
+          type: 'string',
+          description: 'URL to fetch',
+        },
+        method: {
+          type: 'string',
+          enum: ['GET', 'POST', 'PUT', 'PATCH', 'DELETE'],
+          description: 'HTTP method (default: GET)',
+        },
+        headers: {
+          type: 'object',
+          description: 'Additional request headers',
+        },
+        body: {
+          description: 'Request body for POST/PUT/PATCH. String or object (auto-JSON-serialized).',
+        },
+        timeout: {
+          type: 'number',
+          description: 'Timeout in milliseconds (default: 30000)',
+        },
+        maxBodySize: {
+          type: 'number',
+          description: 'Maximum response body size in characters (default: 50000)',
+        },
+      },
+      required: ['url'],
+    },
+  },
+  {
+    name: 'upload_file',
+    description: `Set a file on a file input (<input type="file">) programmatically. Use to test file upload flows or attach files to forms without user interaction.
+
+Content can be plain text or base64-encoded binary.`,
+    input_schema: {
+      type: 'object',
+      properties: {
+        selector: {
+          type: 'string',
+          description: 'CSS selector or tref_N handle for the file input element',
+        },
+        filename: {
+          type: 'string',
+          description: 'Filename to use (e.g., "report.pdf", "data.csv")',
+        },
+        content: {
+          type: 'string',
+          description: 'File content — plain text or base64-encoded',
+        },
+        mimeType: {
+          type: 'string',
+          description: 'MIME type (e.g., "text/plain", "application/pdf", "image/png")',
+        },
+        encoding: {
+          type: 'string',
+          enum: ['text', 'base64'],
+          description: 'Content encoding (default: text)',
+        },
+      },
+      required: ['selector', 'filename', 'content'],
+    },
+  },
+  {
+    name: 'handle_dialog',
+    description: `Intercept browser dialogs (alert, confirm, prompt) so they don't block page execution.
+
+Call BEFORE triggering an action that would open a dialog. Subsequent alert/confirm/prompt calls will be auto-handled according to the accept parameter.
+
+accept: true → confirm returns true, prompt returns promptText or default value.
+accept: false → confirm returns false, prompt returns null.
+drain: true → return and clear accumulated dialog log (use AFTER an action to see if any dialogs fired).
+
+Restore originals: not supported — reload the page to reset dialogs.`,
+    input_schema: {
+      type: 'object',
+      properties: {
+        accept: {
+          type: 'boolean',
+          description: 'Whether to accept dialogs (default: true)',
+        },
+        promptText: {
+          type: 'string',
+          description: 'Text to return for prompt() dialogs (default: empty string)',
+        },
+        drain: {
+          type: 'boolean',
+          description: 'Return and clear dialog log without installing hooks (check what dialogs fired)',
+        },
+      },
+    },
+  },
+
+  // ============================================================================
+  // DEVELOPER TOOLS
+  // ============================================================================
+  {
+    name: 'detect_page_tech',
+    description: `Detect frameworks, libraries, and technologies used on the current page.
+
+Checks for: React, Next.js, Vue, Nuxt, Angular, Svelte, SvelteKit, Ember, jQuery, Backbone, state management (Redux, MobX, Vuex, Pinia, Zustand, Recoil, Jotai, XState), UI frameworks (Tailwind, Bootstrap, Material UI, Chakra, Ant Design, Radix), build tools (Webpack, Vite, Parcel, Turbopack), analytics (GA, GTM, Segment, Hotjar, Mixpanel), and more.
+
+USE INSTEAD OF manual framework probing with execute_script.`,
+    input_schema: {
+      type: 'object',
+      properties: {},
+    },
+  },
+  {
+    name: 'get_performance_metrics',
+    description: `Get page performance metrics: navigation timing, Core Web Vitals (LCP, FCP, CLS, INP), slowest resources with per-resource timing breakdown (DNS, TCP, TTFB, download), long tasks, memory usage, and custom performance marks/measures.
+
+Returns structured data — no manual scripting needed.`,
+    input_schema: {
+      type: 'object',
+      properties: {
+        includeResources: {
+          type: 'boolean',
+          description: 'Include top 10 slowest resources with timing breakdown (default: true)',
+        },
+      },
+    },
+  },
+  {
+    name: 'audit_accessibility',
+    description: `Run 10 WCAG accessibility checks on the current page:
+
+1. Images missing alt text
+2. Form inputs without labels
+3. Missing document lang attribute
+4. Empty links (no text/aria-label)
+5. Empty buttons (no text/aria-label)
+6. Heading hierarchy issues (skipped levels)
+7. Low color contrast (AA ratio check on text elements)
+8. Missing ARIA landmarks
+9. Positive tabindex values (disrupts tab order)
+10. Duplicate element IDs
+
+Returns structured issues with selectors and descriptions.`,
+    input_schema: {
+      type: 'object',
+      properties: {
+        maxIssues: {
+          type: 'number',
+          description: 'Maximum issues to return per check category (default: 20)',
+        },
+      },
+    },
+  },
+  {
+    name: 'inspect_app_state',
+    description: `Read application state from React, Redux, Vue, Vuex, Pinia, Angular, or window globals.
+
+Targets:
+- "auto" — detect framework and return whatever state is found
+- "react" — walk React fiber tree from selector to get props/state
+- "redux" — read Redux store via window.__REDUX_DEVTOOLS_EXTENSION__ or store.getState()
+- "vue" — read Vue component data/props from selector
+- "angular" — read Angular component properties from selector
+- "global" — read arbitrary window property by path (e.g., "myApp.config.apiUrl")
+
+Output is safely serialized with depth limits to prevent payload explosions.`,
+    input_schema: {
+      type: 'object',
+      properties: {
+        target: {
+          type: 'string',
+          enum: ['auto', 'redux', 'react', 'vue', 'angular', 'global'],
+          description: 'What state to inspect (default: "auto")',
+        },
+        selector: {
+          type: 'string',
+          description: 'CSS selector for the component to inspect (for react/vue/angular targets)',
+        },
+        path: {
+          type: 'string',
+          description: 'Dot-separated path to a specific property (e.g., "user.profile.name" for Redux, "document.title" for global)',
+        },
+        maxDepth: {
+          type: 'number',
+          description: 'Maximum depth for state serialization (default: 3, max: 6)',
+        },
+      },
+    },
+  },
+
+];
+
+/**
+ * Get a tool definition by name
+ * @param {string} name - Tool name
+ * @returns {Object|undefined} Tool definition or undefined if not found
+ */
+function getToolByName(name) {
+  return BROWSER_TOOLS.find(tool => tool.name === name);
+}
+
+/**
+ * Check if a tool is considered high-risk (requires confirmation)
+ * @param {string} name - Tool name
+ * @returns {boolean} True if high-risk
+ */
+function isHighRiskTool(name) {
+  const highRisk = [
+    'click_element',
+    'type_text',
+    'fill_form',
+    'navigate',
+    'execute_script',
+    'set_cookie',
+    'delete_cookie',
+    'set_storage_item',
+    'clear_storage',
+    'write_clipboard',
+    'close_tab',
+    'press_key',
+    'select_option',
+    'set_checkbox',
+    'clear_browsing_data',
+    'clear_indexeddb',
+    'clear_cache_storage',
+    'delete_history',
+  ];
+  return highRisk.includes(name);
+}
+
+// ============================================================================
+// WORKFLOW RECORDING
+// ============================================================================
+BROWSER_TOOLS.push(
+  {
+    name: 'start_recording',
+    description: 'Start recording user interactions to create a reusable workflow. Tell the user to perform the steps they want to automate, then call stop_recording when done. Recording captures clicks, text input, select changes, and page navigation.',
+    input_schema: { type: 'object', properties: {} },
+  },
+  {
+    name: 'stop_recording',
+    description: 'Stop recording user interactions and return the captured steps. Follow with save_workflow to name and persist the workflow.',
+    input_schema: { type: 'object', properties: {} },
+  },
+  {
+    name: 'save_workflow',
+    description: 'Save a recorded workflow with a name so it can be run later.',
+    input_schema: {
+      type: 'object',
+      properties: {
+        name: { type: 'string', description: 'Short name for the workflow (used to run it later)' },
+        steps: { type: 'array', description: 'Steps array from stop_recording', items: { type: 'object' } },
+        description: { type: 'string', description: 'What this workflow does (1-2 sentences)' },
+      },
+      required: ['name', 'steps'],
+    },
+  },
+  {
+    name: 'list_workflows',
+    description: 'List all saved workflows with their names, descriptions, and run counts.',
+    input_schema: { type: 'object', properties: {} },
+  },
+  {
+    name: 'run_workflow',
+    description: 'Run a saved workflow by name, replaying all captured steps.',
+    input_schema: {
+      type: 'object',
+      properties: {
+        name: { type: 'string', description: 'Name of the workflow to run' },
+      },
+      required: ['name'],
+    },
+  },
+  {
+    name: 'delete_workflow',
+    description: 'Delete a saved workflow by name.',
+    input_schema: {
+      type: 'object',
+      properties: {
+        name: { type: 'string', description: 'Name of the workflow to delete' },
+      },
+      required: ['name'],
+    },
+  }
+);
+
+// Export for use in other background scripts
+window.BROWSER_TOOLS = BROWSER_TOOLS;
+window.getToolByName = getToolByName;
+window.isHighRiskTool = isHighRiskTool;

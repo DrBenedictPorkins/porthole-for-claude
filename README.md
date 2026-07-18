@@ -67,4 +67,4 @@ All data stays local (`chrome.storage.local`). The only external call is to Anth
 
 ## License
 
-[PolyForm Noncommercial 1.0.0](https://polyformproject.org/licenses/noncommercial/1.0.0/) — free for personal, educational, and non-commercial use. Commercial use prohibited.
+MIT

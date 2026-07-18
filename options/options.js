@@ -1,5 +1,5 @@
 /**
- * Foxhole for Claude - Options Page
+ * Porthole for Claude - Options Page
  * Manages extension settings including API key, model selection, and autonomy preferences
  */
 
@@ -450,11 +450,11 @@
 
     // View debug logs
     elements.viewDebugLogs.addEventListener('click', async () => {
-      const data = await browser.storage.local.get(['foxholeDebugLogs_bg', 'foxholeDebugLogs_sidebar', 'foxholeDebugLogs_content']);
+      const data = await browser.storage.local.get(['portholeDebugLogs_bg', 'portholeDebugLogs_sidebar', 'portholeDebugLogs_content']);
       const logs = [
-        ...(data.foxholeDebugLogs_bg || []),
-        ...(data.foxholeDebugLogs_sidebar || []),
-        ...(data.foxholeDebugLogs_content || []),
+        ...(data.portholeDebugLogs_bg || []),
+        ...(data.portholeDebugLogs_sidebar || []),
+        ...(data.portholeDebugLogs_content || []),
       ].sort((a, b) => a.ts - b.ts);
       if (logs.length === 0) {
         elements.debugLogOutput.textContent = '(no debug logs stored — enable Debug Logging and reload)';
@@ -471,7 +471,7 @@
 
     // Clear debug logs
     elements.clearDebugLogs.addEventListener('click', async () => {
-      await browser.storage.local.remove(['foxholeDebugLogs_bg', 'foxholeDebugLogs_sidebar', 'foxholeDebugLogs_content']);
+      await browser.storage.local.remove(['portholeDebugLogs_bg', 'portholeDebugLogs_sidebar', 'portholeDebugLogs_content']);
       elements.debugLogOutput.textContent = '(cleared)';
     });
 

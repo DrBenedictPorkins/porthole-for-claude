@@ -1,7 +1,7 @@
 /**
- * Foxhole for Claude - Tool Definitions
+ * Porthole for Claude - Tool Definitions
  *
- * Converted from FoxHole MCP tools to Claude API format.
+ * Converted from Porthole MCP tools to Claude API format.
  * Key difference: MCP uses `inputSchema`, Claude uses `input_schema`
  */
 

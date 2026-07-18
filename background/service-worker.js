@@ -1,4 +1,4 @@
-// Chrome MV3 Service Worker entry point for Foxhole for Claude.
+// Chrome MV3 Service Worker entry point for Porthole for Claude.
 //
 // Service workers have no `window` global. All background scripts use window.X
 // to share state across script boundaries, so we alias globalThis → window

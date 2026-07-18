@@ -305,9 +305,9 @@ function getWelcomeMessageHtml() {
   return `
     <div class="welcome-message">
       <div class="welcome-icon">
-        <img src="../icons/icon-128.png" alt="Foxhole">
+        <img src="../icons/icon-128.png" alt="Porthole">
       </div>
-      <h2>Foxhole for Claude</h2>
+      <h2>Porthole for Claude</h2>
       <p class="welcome-tagline">Browser control with Claude's intelligence.<br>Your session. Your auth. Full access.</p>
       <div class="welcome-caps">
         <div class="welcome-cap"><span class="cap-icon">🔐</span><div><strong>Your Session</strong><span>Acts as you — cookies, auth, logged-in state</span></div></div>

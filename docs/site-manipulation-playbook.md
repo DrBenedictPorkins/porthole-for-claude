@@ -3,7 +3,7 @@
 Hard-won techniques for reading and driving modern (SPA/GraphQL) websites from a
 browser extension. Distilled from the Nextdoor Moderator extension port
 (Firefox MV2 → Chrome MV3), where the sites actively hide their state from
-naive DOM scraping. Applies directly to Foxhole's `content/content.js`,
+naive DOM scraping. Applies directly to Porthole's `content/content.js`,
 `background/api-observer.js`, `background/interaction-observer.js`, and the
 Chrome port under `manifest.chrome.json`.
 
@@ -73,7 +73,7 @@ Anchor the walk on a **stable semantic node** (see §6), e.g.
 brittle nth-child path. In the Chrome port this exact walk has to happen inside
 a MAIN-world script that posts the result back.
 
-**Why this matters for Foxhole:** when a tool needs to identify "what is the
+**Why this matters for Porthole:** when a tool needs to identify "what is the
 user actually looking at right now" and the id isn't in the DOM, the fiber is
 the source of truth — especially after client-side navigation (§3).
 
@@ -93,7 +93,7 @@ store** and issues **zero network requests**. Consequences:
 - Don't treat "last captured API response" as "current state." Re-derive
   current state from the DOM or the fiber (§2) on demand.
 - Detect client-side navigation via `history.pushState`/`popstate` and DOM
-  mutation observers, **not** only via network events. Foxhole's
+  mutation observers, **not** only via network events. Porthole's
   `interaction-observer.js` is the natural home for this.
 - Invalidate/clear cached per-view state when the view changes, even with no
   network signal.
@@ -103,7 +103,7 @@ store** and issues **zero network requests**. Consequences:
 ## 4. Capturing response bodies: Firefox has it easy, Chrome doesn't
 
 - **Firefox (MV2):** `browser.webRequest.filterResponseData(requestId)` gives
-  you a stream of the actual response body. This is the clean way and Foxhole
+  you a stream of the actual response body. This is the clean way and Porthole
   already holds `webRequest`/`webRequestBlocking`. Use it in `api-observer.js`
   to read GraphQL/JSON payloads directly.
   ```js
@@ -156,9 +156,9 @@ To **replay or call** such an API yourself:
   more latitude; in the Chrome port, do the `fetch` from a MAIN-world script so
   it carries the page's origin and cookies.
 
-**Caution / Foxhole design fit:** replaying write-mutations (voting, posting,
+**Caution / Porthole design fit:** replaying write-mutations (voting, posting,
 deleting) is powerful and risky. Keep it behind explicit user confirmation —
-consistent with Foxhole's "Assistant, Not Automation" stance. Prefer reads;
+consistent with Porthole's "Assistant, Not Automation" stance. Prefer reads;
 gate writes.
 
 ---
@@ -169,7 +169,7 @@ SPAs re-render constantly and destroy/recreate nodes. Two consequences:
 
 - **A cached DOM node reference or nth-child selector rots.** Re-resolve by a
   stable signal each time: `aria-label`, `data-*`, a role, or the fiber id
-  (§2). Foxhole's `tref_N` element-registry handles should resolve to elements
+  (§2). Porthole's `tref_N` element-registry handles should resolve to elements
   by re-querying stable attributes, not by holding a detached node.
 - To find data, **walk from a semantic anchor**. "The close button of the
   expanded post" (`button[aria-label="Close expanded post"]`) is durable; a
@@ -271,14 +271,14 @@ const setter = Object.getOwnPropertyDescriptor(
 setter.call(input, text);
 input.dispatchEvent(new Event('input', { bubbles: true }));
 ```
-Directly relevant to any Foxhole tool that fills a site form.
+Directly relevant to any Porthole tool that fills a site form.
 
 ---
 
 ## 10. Tracking elements across re-renders (handles / weak-hash)
 
 To let a tool refer to an element on a *later* turn ("click element 7" —
-Foxhole's `tref_N` registry), you assign each element a stable handle and keep
+Porthole's `tref_N` registry), you assign each element a stable handle and keep
 the mapping. Two different "hashes" are in play; they behave oppositely.
 
 **The page-side hash is not yours.** React's `__reactFiber$<hash>` suffix is a

@@ -1,6 +1,6 @@
 {
   "manifest_version": 3,
-  "name": "Foxhole for Claude",
+  "name": "Porthole for Claude",
   "version": "1.17.0",
   "description": "Chat with Claude to control your browser",
   "permissions": [
@@ -25,7 +25,7 @@
     "<all_urls>"
   ],
   "action": {
-    "default_title": "Open Foxhole for Claude",
+    "default_title": "Open Porthole for Claude",
     "default_icon": {
       "16": "icons/icon-16.png",
       "48": "icons/icon-48.png"

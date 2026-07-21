@@ -86,9 +86,6 @@
   /** @type {Array} Tool names used during current streaming response (for conversation history) */
   let currentStreamingTools = [];
 
-  /** @type {boolean} Whether the current message was sent via the report prompt button */
-  let reportPromptPending = false;
-
   /** @type {Object|null} Thinking timer state */
   let thinkingTimer = null;
 
@@ -127,8 +124,6 @@
   // imagePreview and removeImageBtn are now created dynamically per-image in renderImagePreviews()
   const settingsMenuBtn = document.getElementById('settings-menu-btn');
   const exportContextBtn = document.getElementById('export-context-btn');
-  const reportPromptBtn = document.getElementById('report-prompt-btn');
-
   // Modal Elements
   const confirmModal = document.getElementById('confirm-modal');
   const confirmAction = document.getElementById('confirm-action');
@@ -208,7 +203,28 @@
   // INITIALIZATION
   // ============================================================================
 
+  async function getSpecsCount(domain) {
+    try {
+      const resp = await browser.runtime.sendMessage({ type: 'GET_NEW_NOTES_COUNT', domain });
+      return resp?.count || 0;
+    } catch {
+      return 0;
+    }
+  }
+
   async function init() {
+    // Show extension load timestamp from service worker
+    browser.runtime.sendMessage({ type: 'GET_BUILD_INFO' }).then(info => {
+      if (info?.date) {
+        const d = new Date(info.date);
+        const stamp = document.getElementById('build-stamp');
+        if (stamp) {
+          stamp.textContent = `loaded ${d.getHours()}:${String(d.getMinutes()).padStart(2,'0')}:${String(d.getSeconds()).padStart(2,'0')}`;
+          stamp.title = `Extension loaded at ${d.toISOString()}`;
+        }
+      }
+    }).catch(() => {});
+
     await loadSettings();
     await checkApiKey();
 
@@ -446,6 +462,7 @@
         reattachChatEventListeners();
         if (chatContainer.querySelector('.welcome-message')) {
           window.TabManager.attachPromptButtonListeners(userInput);
+          window.TabManager.populateWelcomePageContext(getSpecsCount);
         }
         // Restore scroll position after DOM update
         if (savedState.scrollTop !== undefined) {
@@ -456,6 +473,7 @@
       } else {
         chatContainer.innerHTML = window.TabManager.getWelcomeMessageHtml();
         window.TabManager.attachPromptButtonListeners(userInput);
+        window.TabManager.populateWelcomePageContext(getSpecsCount);
       }
     } else {
       conversation = [];
@@ -463,6 +481,7 @@
       lastTurnTokens = { input: 0, output: 0, cacheCreation: 0, cacheRead: 0 };
       chatContainer.innerHTML = window.TabManager.getWelcomeMessageHtml();
       window.TabManager.attachPromptButtonListeners(userInput);
+      window.TabManager.populateWelcomePageContext(getSpecsCount);
       tabConversations.set(tabId, {
         conversation: [],
         tokenUsage: { input: 0, output: 0, cacheCreation: 0, cacheRead: 0 },
@@ -474,7 +493,6 @@
 
     refreshTokenDisplay();
     handleInputChange();
-    reportPromptBtn.classList.add('hidden');
     window.ModalManager.autonomy.updateUI();
   }
 
@@ -766,17 +784,6 @@
     workflowsClose?.addEventListener('click', () => workflowsModal.classList.add('hidden'));
     workflowsModal?.querySelector('.modal-backdrop')?.addEventListener('click', () => workflowsModal.classList.add('hidden'));
 
-    // Report prompt button
-    reportPromptBtn.addEventListener('click', () => {
-      userInput.value = 'Generate report based on your findings';
-      userInput.style.height = 'auto';
-      userInput.style.height = Math.min(userInput.scrollHeight, 120) + 'px';
-      userInput.focus();
-      reportPromptBtn.classList.add('hidden');
-      reportPromptPending = true;
-      handleInputChange();
-    });
-
     // Stop button
     stopBtn.addEventListener('click', handleStopGeneration);
 
@@ -904,7 +911,6 @@
     const hasImages = pendingImages.length > 0;
     sendBtn.disabled = (!hasText && !hasImages) || isStreaming;
     if (userInput.value.length > 0) {
-      reportPromptBtn.classList.add('hidden');
       chatContainer.classList.remove('awaiting-reply');
     }
   }
@@ -963,7 +969,6 @@
     isStreaming = true;
     streamingTabId = currentTabId;
     currentStreamingTools = []; // Reset tool tracking for new response
-    reportPromptBtn.classList.add('hidden');
     sendBtn.classList.add('hidden');
     stopBtn.classList.remove('hidden');
 
@@ -1140,6 +1145,9 @@
       case 'TOKEN_USAGE':
         updateTokenUsage(message.inputTokens, message.outputTokens, message.cacheCreationTokens, message.cacheReadTokens);
         break;
+      case 'PAUSE_FOR_INPUT':
+        showPauseForInput(message.promptId, message.question, message.options, message.context);
+        break;
       case 'ITERATION_LIMIT_REACHED':
         showIterationLimitPrompt(message.promptId, message.currentIteration);
         break;
@@ -1246,6 +1254,55 @@
       promptElement.remove();
     });
 
+    window.RenderUtils.scrollToBottom(chatContainer);
+  }
+
+  function showPauseForInput(promptId, question, options, context) {
+    const el = document.createElement('div');
+    el.className = 'message system pause-prompt';
+    el.dataset.promptId = promptId;
+
+    const contextHtml = context
+      ? `<p class="pause-context">${context.replace(/</g, '&lt;')}</p>`
+      : '';
+
+    el.innerHTML = `
+      <div class="message-content">
+        <div class="pause-prompt-content">
+          <div class="pause-prompt-header">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <circle cx="12" cy="12" r="10"/>
+              <line x1="12" y1="8" x2="12" y2="13"/>
+              <line x1="12" y1="16" x2="12.01" y2="16"/>
+            </svg>
+            <span>Input needed</span>
+          </div>
+          ${contextHtml}
+          <p class="pause-question">${question.replace(/</g, '&lt;')}</p>
+          <div class="pause-options"></div>
+        </div>
+      </div>
+    `;
+
+    const optionsContainer = el.querySelector('.pause-options');
+    options.forEach(opt => {
+      const btn = document.createElement('button');
+      btn.className = 'pause-option-btn';
+      btn.textContent = opt;
+      btn.addEventListener('click', () => {
+        browser.runtime.sendMessage({
+          type: 'PAUSE_FOR_INPUT_RESPONSE',
+          promptId,
+          selected: opt
+        });
+        el.querySelector('.pause-options').innerHTML =
+          `<span class="pause-selected">&#10003; ${opt.replace(/</g, '&lt;')}</span><span class="pause-waiting"> — working…</span>`;
+        el.querySelectorAll('.pause-option-btn').forEach(b => b.disabled = true);
+      });
+      optionsContainer.appendChild(btn);
+    });
+
+    chatContainer.appendChild(el);
     window.RenderUtils.scrollToBottom(chatContainer);
   }
 
@@ -1383,15 +1440,7 @@
 
     // Handle pending tab switch
     const tabToSwitchTo = pendingTabSwitch;
-    const activityItems = activityLog?.querySelectorAll('.activity-item');
-    const hadTools = currentStreamingTools.length > 0 || (activityItems && activityItems.length > 0);
-    const wasReportPrompt = reportPromptPending;
-    reportPromptPending = false;
     resetStreamingState();
-
-    if (hadTools && !wasReportPrompt) {
-      reportPromptBtn.classList.remove('hidden');
-    }
 
     if (tabToSwitchTo && tabToSwitchTo !== currentTabId) {
       debugLog('INFO', '[TabSwitch] Streaming complete, switching to pending tab', tabToSwitchTo);

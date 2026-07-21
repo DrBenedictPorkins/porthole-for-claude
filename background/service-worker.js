@@ -9,6 +9,7 @@ globalThis.window = globalThis;
 importScripts('../sidebar/lib/browser-polyfill.min.js');
 
 importScripts(
+  'build-info.js',
   'prompt-loader.js',
   'content-sanitizer.js',
   'Readability.js',

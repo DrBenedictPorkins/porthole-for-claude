@@ -1,7 +1,7 @@
 {
   "manifest_version": 3,
   "name": "Porthole for Claude",
-  "version": "1.18.0",
+  "version": "1.19.0",
   "description": "Chat with Claude to control your browser",
   "permissions": [
     "tabs",
@@ -11,7 +11,6 @@
     "cookies",
     "clipboardRead",
     "clipboardWrite",
-    "webNavigation",
     "history",
     "downloads",
     "downloads.open",

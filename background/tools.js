@@ -539,7 +539,7 @@ const BROWSER_TOOLS = [
   // ============================================================================
   {
     name: 'create_markdown',
-    description: 'Save content as a markdown file to the user\'s Downloads folder. Use whenever the user asks to save, export, create, or generate a file/page/document from content. Do not use unprompted to silently log findings — reply in chat instead.',
+    description: 'Render markdown content in a new browser tab as a formatted report. The content is stored locally and opened immediately — nothing is saved to the Downloads folder. Use whenever the user asks to save, export, create, or generate a report/document from content. Do not use unprompted to silently log findings — reply in chat instead.',
     input_schema: {
       type: 'object',
       properties: {
@@ -1699,6 +1699,29 @@ BROWSER_TOOLS.push(
         name: { type: 'string', description: 'Name of the workflow to delete' },
       },
       required: ['name'],
+    },
+  },
+  {
+    name: 'pause_for_input',
+    description: 'Pause and ask the user a question before continuing. Use when you hit a dead end, need to choose between approaches, or want to confirm a strategy before spending more tool calls. Present findings so far, explain the options, and wait for the user to choose.',
+    input_schema: {
+      type: 'object',
+      properties: {
+        question: {
+          type: 'string',
+          description: 'The question or situation to present to the user',
+        },
+        options: {
+          type: 'array',
+          items: { type: 'string' },
+          description: 'The choices to present as buttons (2-4 options)',
+        },
+        context: {
+          type: 'string',
+          description: 'Brief summary of what you found / tried so far (shown above the question)',
+        },
+      },
+      required: ['question', 'options'],
     },
   }
 );

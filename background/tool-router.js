@@ -622,6 +622,12 @@ async function executeTool(toolName, toolInput) {
         return { success: true, deleted: toolInput.name };
       }
 
+      case 'pause_for_input': {
+        const { question, options, context } = toolInput;
+        const selected = await window.requestPauseForInput(question, options, context);
+        return { selected, cancelled: selected === null };
+      }
+
       default:
         throw new Error(`Unknown tool: ${toolName}`);
     }
@@ -777,7 +783,7 @@ async function handleCreateMarkdown(params) {
 
   return {
     success: true,
-    message: 'Report opened in new tab.',
+    message: `Report "${title}" opened in a new tab. It is NOT saved to disk — it lives in browser storage and disappears if the tab is closed. Tell the user to copy the content if they need to keep it.`,
   };
 }
 

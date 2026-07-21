@@ -1700,6 +1700,29 @@ BROWSER_TOOLS.push(
       },
       required: ['name'],
     },
+  },
+  {
+    name: 'pause_for_input',
+    description: 'Pause and ask the user a question before continuing. Use when you hit a dead end, need to choose between approaches, or want to confirm a strategy before spending more tool calls. Present findings so far, explain the options, and wait for the user to choose.',
+    input_schema: {
+      type: 'object',
+      properties: {
+        question: {
+          type: 'string',
+          description: 'The question or situation to present to the user',
+        },
+        options: {
+          type: 'array',
+          items: { type: 'string' },
+          description: 'The choices to present as buttons (2-4 options)',
+        },
+        context: {
+          type: 'string',
+          description: 'Brief summary of what you found / tried so far (shown above the question)',
+        },
+      },
+      required: ['question', 'options'],
+    },
   }
 );
 

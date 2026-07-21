@@ -28,6 +28,9 @@ let lastRenderedText = '';
 /** @type {boolean} Whether tools were executed since last text (for paragraph breaks) */
 let toolsExecutedSinceLastText = false;
 
+/** @type {boolean} Whether any tool has fired this response (suppresses live text rendering) */
+let anyToolFiredThisResponse = false;
+
 // ========== Configuration ==========
 
 /**
@@ -119,7 +122,11 @@ function updateStreamingIndicatorWithTool(indicator, toolName) {
  */
 function renderStreamingBatch() {
   if (!streamingTextContainer || streamingRawText === lastRenderedText) {
-    return; // Nothing new to render
+    return;
+  }
+  // Suppress live rendering once tools have fired — finalizeMessage renders the real answer
+  if (anyToolFiredThisResponse) {
+    return;
   }
 
   // Get or create response text div
@@ -161,6 +168,7 @@ function stopStreamingInterval() {
   streamingTextContainer = null;
   lastRenderedText = '';
   toolsExecutedSinceLastText = false;
+  anyToolFiredThisResponse = false;
 }
 
 /**
@@ -307,8 +315,22 @@ function handleToolUse(toolUse, state, elements, callbacks = {}) {
     indicator.style.display = 'none';
   }
 
-  // Mark that tools have been used - next text should start a new paragraph
-  toolsExecutedSinceLastText = true;
+  // Suppress live text rendering for the rest of this response; wipe any text already shown
+  if (!anyToolFiredThisResponse) {
+    anyToolFiredThisResponse = true;
+    streamingRawText = '';
+    lastRenderedText = '';
+    if (streamingTextContainer) {
+      streamingTextContainer.dataset.rawText = '';
+      streamingTextContainer.innerHTML = '';
+    }
+  } else {
+    // Subsequent tools: just discard accumulated narration since last tool
+    streamingRawText = '';
+    lastRenderedText = '';
+  }
+
+  toolsExecutedSinceLastText = false;
 
   // Add tool call to activity log
   if (callbacks.createToolCallElement) {
@@ -518,16 +540,22 @@ function finalizeMessage(contentElement, finalText, callbacks = {}) {
     // Clear text container
     textContainer.innerHTML = '';
 
-    // Parse <answer> tags and render with distinct styling
     const render = callbacks.renderMarkdownContent || RenderUtils.renderMarkdownContent;
-    const answerMatch = finalText.match(/<answer>([\s\S]*?)<\/answer>/);
+
+    // Split <details> blocks out before any other processing
+    const detailsRegex = /<details>([\s\S]*?)<\/details>/g;
+    const detailsBlocks = [];
+    const textWithoutDetails = finalText.replace(detailsRegex, (_, content) => {
+      detailsBlocks.push(content.trim());
+      return '';
+    }).trim();
+
+    const answerMatch = textWithoutDetails.match(/<answer>([\s\S]*?)<\/answer>/);
 
     if (answerMatch) {
-      // Split into working notes and answer
-      const beforeAnswer = finalText.substring(0, answerMatch.index).trim();
+      const beforeAnswer = textWithoutDetails.substring(0, answerMatch.index).trim();
       const answerContent = answerMatch[1].trim();
 
-      // Render working notes (if any)
       if (beforeAnswer) {
         const workingDiv = document.createElement('div');
         workingDiv.className = 'response-text working-notes';
@@ -535,17 +563,30 @@ function finalizeMessage(contentElement, finalText, callbacks = {}) {
         textContainer.appendChild(workingDiv);
       }
 
-      // Render answer with emphasis
       const answerDiv = document.createElement('div');
       answerDiv.className = 'response-text answer-content';
       answerDiv.innerHTML = render(answerContent);
       textContainer.appendChild(answerDiv);
     } else {
-      // No <answer> tags - render as before
       const textDiv = document.createElement('div');
       textDiv.className = 'response-text';
-      textDiv.innerHTML = render(finalText);
+      textDiv.innerHTML = render(textWithoutDetails);
       textContainer.appendChild(textDiv);
+    }
+
+    // Render <details> blocks as collapsible sections
+    for (const detailContent of detailsBlocks) {
+      const detailsEl = document.createElement('details');
+      detailsEl.className = 'response-details';
+      const summary = document.createElement('summary');
+      summary.className = 'response-details-summary';
+      summary.textContent = 'Details';
+      const body = document.createElement('div');
+      body.className = 'response-details-body response-text';
+      body.innerHTML = render(detailContent);
+      detailsEl.appendChild(summary);
+      detailsEl.appendChild(body);
+      textContainer.appendChild(detailsEl);
     }
 
     // Activity log AFTER response text — the report is the point, tools are detail

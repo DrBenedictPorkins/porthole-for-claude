@@ -18,6 +18,7 @@
           <option value="claude-opus-4-8">Opus 4.8</option>
         </select>
         <span id="token-display" class="token-display" title="Click for breakdown">0k tokens</span>
+        <span id="build-stamp" class="build-stamp" title="Extension load time"></span>
         <div id="token-popover" class="token-popover hidden">
           <div class="tp-row"><span class="tp-label">Conversation</span><span id="tp-total">—</span></div>
           <div class="tp-row"><span class="tp-label">Last turn</span><span id="tp-last">—</span></div>
@@ -104,20 +105,28 @@
     <!-- Chat Container -->
     <div id="chat-container" class="chat-container">
       <div class="welcome-message">
-        <div class="welcome-icon">
-          <img src="../icons/icon-128.png" alt="Porthole">
+        <div class="welcome-card">
+          <div class="welcome-header">
+            <img src="../icons/icon-128.png" class="welcome-logo" alt="">
+            <div class="welcome-headtext">
+              <span class="welcome-brand">Porthole</span>
+              <span class="welcome-sub">Your session · your auth · full browser access</span>
+            </div>
+          </div>
+          <ul class="welcome-caps">
+            <li><span class="cap-i">🔐</span><b>Acts as you</b> — your cookies, auth, logged-in state</li>
+            <li><span class="cap-i">📡</span><b>Reverse-engineers APIs</b> from live network traffic</li>
+            <li><span class="cap-i">🧬</span><b>Full DOM access</b> — reads, extracts, modifies pages</li>
+            <li><span class="cap-i">🧠</span><b>Remembers each site</b> — selectors &amp; APIs, saved as specs</li>
+          </ul>
+          <div class="welcome-page-context">
+            <span class="page-context-dot"></span>
+            <span class="page-context-domain" id="welcome-domain">—</span>
+            <span class="page-context-title" id="welcome-title">Loading page…</span>
+            <span class="page-context-specs" id="welcome-specs"></span>
+          </div>
         </div>
-        <h2>Porthole for Claude</h2>
-        <p class="welcome-tagline">Browser control with Claude's intelligence.<br>Your session. Your auth. Full access.</p>
-        <div class="welcome-caps">
-          <div class="welcome-cap"><span class="cap-icon">🔐</span><div><strong>Your Session</strong><span>Acts as you — cookies, auth, logged-in state</span></div></div>
-          <div class="welcome-cap"><span class="cap-icon">📡</span><div><strong>API Discovery</strong><span>Reverse-engineers private APIs from traffic</span></div></div>
-          <div class="welcome-cap"><span class="cap-icon">🧬</span><div><strong>Full DOM Access</strong><span>Reads, modifies, extracts page structure</span></div></div>
-          <div class="welcome-cap"><span class="cap-icon">🧠</span><div><strong>Site Memory</strong><span>Learns selectors and patterns per-site</span></div></div>
-          <div class="welcome-cap"><span class="cap-icon">⏺</span><div><strong>Workflow Recording</strong><span>Record and replay multi-step automations</span></div></div>
-          <div class="welcome-cap"><span class="cap-icon">⚡</span><div><strong>Multi-step Chains</strong><span>Complex tasks across pages, persistent context</span></div></div>
-        </div>
-        <p class="welcome-tip">Try these to get started:</p>
+        <div class="welcome-prompts-label">Try on this page</div>
         <div class="welcome-prompts">
           <!-- Populated from PRESET_PROMPTS in tab-manager.js -->
         </div>
@@ -145,7 +154,6 @@
           placeholder="Ask Claude anything..."
           rows="1"
         ></textarea>
-        <button id="report-prompt-btn" class="report-prompt-btn hidden">Report</button>
       </div>
       <div class="input-controls">
         <!-- Autonomy Mode Dropdown -->

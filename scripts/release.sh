@@ -61,6 +61,19 @@ read -rp "Continue? [y/N] " OK
 [[ "$OK" =~ ^[Yy]$ ]] || { echo "Aborted."; exit 0; }
 echo ""
 
+# ── Write build-info.js ────────────────────────────────────────────────────────
+
+BUILD_DATE=$(date -u +"%Y-%m-%dT%H:%M:%SZ")
+cat > background/build-info.js << JSEOF
+// Written by scripts/release.sh at release time. Do not edit manually.
+window.PORTHOLE_BUILD = {
+  version: '$RELEASE',
+  date: '$BUILD_DATE',
+};
+JSEOF
+echo "→ Wrote build-info.js ($RELEASE / $BUILD_DATE)"
+git add background/build-info.js
+
 # ── Stage any tracked modifications ────────────────────────────────────────────
 
 if [[ -n "$(git status --porcelain --untracked-files=no)" ]]; then

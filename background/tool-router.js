@@ -622,6 +622,12 @@ async function executeTool(toolName, toolInput) {
         return { success: true, deleted: toolInput.name };
       }
 
+      case 'pause_for_input': {
+        const { question, options, context } = toolInput;
+        const selected = await window.requestPauseForInput(question, options, context);
+        return { selected, cancelled: selected === null };
+      }
+
       default:
         throw new Error(`Unknown tool: ${toolName}`);
     }

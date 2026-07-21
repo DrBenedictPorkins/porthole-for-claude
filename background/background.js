@@ -89,6 +89,7 @@
     lastUrl: null
   };
   let pendingIterationPrompts = new Map(); // For iteration limit prompts
+  let pendingPausePrompts = new Map();    // For pause_for_input tool
   let pendingRegionCapture = null; // Resolve fn for region screenshot flow
   let activeStreams = new Map(); // tabId -> abort controller
   let currentStreamWindowId = null; // Window ID for targeted message sending
@@ -210,6 +211,7 @@
   window.getStoredWorkflows = getStoredWorkflows;
   window.saveStoredWorkflow = saveStoredWorkflow;
   window.runStoredWorkflow = runStoredWorkflow;
+  window.requestPauseForInput = requestPauseForInput;
 
   // Initialize on extension load
   init();
@@ -501,6 +503,14 @@
 
       case 'ITERATION_LIMIT_RESPONSE':
         handleIterationLimitResponse(payload);
+        return true;
+
+      case 'PAUSE_FOR_INPUT_RESPONSE':
+        handlePauseForInputResponse(payload);
+        return true;
+
+      case 'GET_BUILD_INFO':
+        sendResponse(window.PORTHOLE_BUILD || null);
         return true;
 
       case 'API_KEY_UPDATED':
@@ -2012,6 +2022,31 @@
     });
   }
 
+  // Pause execution and ask user a question with options
+  function requestPauseForInput(question, options, context) {
+    return new Promise((resolve) => {
+      const promptId = Date.now().toString();
+      pendingPausePrompts.set(promptId, resolve);
+      sendToSidebar({
+        type: 'PAUSE_FOR_INPUT',
+        promptId,
+        question,
+        options,
+        context: context || '',
+      });
+    });
+  }
+
+  // Handle user's option selection from pause_for_input
+  function handlePauseForInputResponse(payload) {
+    const { promptId, selected } = payload;
+    const resolver = pendingPausePrompts.get(promptId);
+    if (resolver) {
+      resolver(selected);
+      pendingPausePrompts.delete(promptId);
+    }
+  }
+
   // Handle user's response to iteration limit prompt
   function handleIterationLimitResponse(payload) {
     const { promptId, allowMore } = payload;
@@ -2188,6 +2223,16 @@
   async function buildSystemPrompt(tabId, tabUrl, conversation) {
     // Build dynamic context (site-specific, changes per domain)
     let dynamicContext = '';
+
+    // Inject current tab URL and title so Claude never needs a tool call for "what page am I on?"
+    if (tabId) {
+      try {
+        const tab = await browser.tabs.get(tabId);
+        if (tab) {
+          dynamicContext += `Current tab: ${tab.url || 'unknown'}\nPage title: ${tab.title || 'unknown'}\n`;
+        }
+      } catch (e) { /* tab may not exist */ }
+    }
 
     // Add site knowledge for current domain if available
     if (tabUrl && window.SiteKnowledge) {

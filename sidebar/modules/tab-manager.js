@@ -255,19 +255,28 @@ function loadTabState(tabId, state, callbacks, elements) {
  * Items with divider:true render as visual separators.
  */
 const PRESET_PROMPTS = [
-  { icon: null, label: 'Analyze Page', prompt: "What's on this page? Give me a quick summary of what it does, who it's for, and what I can do here." },
+  // ---- Welcome grid: one flagship per capability (understand · extract · data · API · automate · audit) ----
+  { icon: '🔎', label: 'Analyze Page', desc: 'What this is, and what you can do here', prompt: "Give me a quick orientation on this page: what it is, who it's for, and the main things I can do here. Keep it to a few sentences." },
+  { icon: '🧲', label: 'Extract Content', desc: 'Pull the articles or posts out clean — skip the noise', prompt: "Extract the main content from this page — the articles, posts, or product info — and skip nav, ads, and sidebars. Show it to me clean in the chat. If it's long, summarize and offer to save the full text." },
+  { icon: '📊', label: 'Scrape to Data', desc: 'Turn a table or listing into CSV or JSON', prompt: "Find the main table, list, or repeated items on this page and turn them into structured data. Work out the columns/fields, extract every row you can see, and give me the result as a clean table in the chat. Tell me if items are paginated or lazy-loaded so we can decide how to get the rest." },
+  { icon: '📡', label: 'Find the API', desc: 'Watch traffic, map the private endpoints behind it', prompt: "Watch this site's network traffic while I browse and map its internal API. Summarize the key endpoints, methods, auth headers, and what each one does — enough for me to call them directly. Note the request and response shape, but don't dump raw payloads." },
+  { icon: '⏺', label: 'Record a Task', desc: 'Record what you do once, replay it anytime', prompt: "I want to automate something I do on this site. Start recording my actions, walk me through performing the steps once, then save it as a workflow I can replay later." },
+  { icon: '🛡️', label: 'Security & Privacy', desc: 'Trackers, dark patterns, exposed data, weak forms', prompt: 'Audit this page for privacy and security issues. Check for: third-party trackers and analytics, dark patterns (hidden opt-ins, forced consent, misleading buttons), data exposed in the DOM or network, insecure form actions, and suspicious external resources. Summarize findings by severity.' },
+
+  { divider: true },
+
+  // ---- Act / automate (session superpower) ----
+  { icon: '🔁', label: 'Replicate a Request', prompt: "I'm going to perform one action on this site — like loading more, submitting, or opening an item. Capture the exact network request behind it (URL, method, headers, body) and show me how to reproduce it as a standalone authenticated call I can script.", menuOnly: true },
+  { icon: '🤖', label: 'Do a Task for Me', prompt: "Help me complete a task on this page. I'll tell you what I want done; find the right elements and do it step by step, and check with me before anything irreversible.", menuOnly: true },
   { icon: null, label: 'Visual Selection', prompt: 'Let me select some items on this page visually.', menuOnly: true },
-  { icon: null, label: 'Record Workflow', prompt: 'Record a workflow for me so I can replay it automatically later. Walk me through what steps to perform.', menuOnly: true },
+
   { divider: true },
-  { icon: '🔍', label: 'Record API Traffic', prompt: 'Monitor network traffic as I browse this site. Summarize API endpoints, methods, and request patterns. For large payloads, just note the structure — don\'t dump raw data. I want to understand how to replicate this site\'s functionality programmatically.' },
-  { icon: '📋', label: 'Document APIs', prompt: 'Analyze the network calls captured so far. Document the internal APIs: list endpoints, auth headers, request formats, and response structures. Create a quick reference I can use to call these APIs directly.', menuOnly: true },
+
+  // ---- Deeper inspection ----
+  { icon: '🧬', label: 'Deep Recon', prompt: "Do a full recon of this site and save what you learn. Detect the tech stack, map which parts of the page are driven by which APIs, note what's available via API versus UI-only, and capture the key selectors. Save a site profile and the important specs. Keep the summary tight — top few per category.", menuOnly: true },
+  { icon: '🔬', label: 'Dev Audit', prompt: 'Run a developer audit on this page. Detect the tech stack (frameworks, state management, UI libraries, build tools, analytics), check Core Web Vitals and performance metrics, and run a WCAG accessibility audit. Summarize all findings with actionable issues.', menuOnly: true },
   { icon: '🗺️', label: 'Map DOM Structure', prompt: "Analyze this page's DOM structure and document the key selectors for: navigation, search, product/item listings, forms, and interactive elements. Save as site specs for future reference.", menuOnly: true },
-  { divider: true },
-  { icon: '🛡️', label: 'Security Audit', prompt: 'Audit this page for privacy and security issues. Check for: third-party trackers and analytics scripts, dark patterns (hidden opt-ins, misleading buttons, forced consent), exposed data in the DOM or network requests, insecure form actions, and suspicious external resource loading. Summarize findings by severity.' },
-  { icon: '🧲', label: 'Extract Content', prompt: "Extract the main content from this page — posts, articles, or products (skip ads, nav, and sidebars). Scan the DOM, pull the primary content clean, then ask me how I want it: view as HTML, save as markdown, or summarize in chat." },
-  { divider: true },
-  { icon: '🔬', label: 'Dev Audit', prompt: 'Run a developer audit on this page. Detect the tech stack (frameworks, state management, UI libraries, build tools, analytics), check Core Web Vitals and performance metrics, and run a WCAG accessibility audit. Summarize all findings with actionable issues.' },
-  { icon: '🧬', label: 'Deep Recon', prompt: 'Run detect_page_tech, check get_network_requests for already-captured traffic, and inspect_app_state for live data. Top 3 per category max. Map: which DOM sections call which APIs, what state drives the UI, and what\'s API-callable vs UI-only. Save a site profile and key specs.' },
+  { icon: '📋', label: 'Document APIs', prompt: 'Analyze the network calls captured so far. Document the internal APIs: list endpoints, auth headers, request formats, and response structures. Create a quick reference I can use to call these APIs directly.', menuOnly: true },
 ];
 
 function escapeAttr(s) {
@@ -280,7 +289,11 @@ function escapeAttr(s) {
 function getWelcomePromptsHtml() {
   return PRESET_PROMPTS
     .filter(p => !p.divider && !p.menuOnly)
-    .map(p => `<button class="prompt-btn" data-prompt="${escapeAttr(p.prompt)}">${p.icon ? p.icon + ' ' : ''}${p.label}</button>`)
+    .map(p => `<button class="prompt-btn" data-prompt="${escapeAttr(p.prompt)}">
+        <span class="prompt-btn-icon">${p.icon || ''}</span>
+        <span class="prompt-btn-label">${p.label}</span>
+        ${p.desc ? `<span class="prompt-btn-desc">${p.desc}</span>` : ''}
+      </button>`)
     .join('\n        ');
 }
 
@@ -304,25 +317,82 @@ function getPromptsDropdownHtml() {
 function getWelcomeMessageHtml() {
   return `
     <div class="welcome-message">
-      <div class="welcome-icon">
-        <img src="../icons/icon-128.png" alt="Porthole">
+      <div class="welcome-card">
+        <div class="welcome-header">
+          <img src="../icons/icon-128.png" class="welcome-logo" alt="">
+          <div class="welcome-headtext">
+            <span class="welcome-brand">Porthole</span>
+            <span class="welcome-sub">Your session · your auth · full browser access</span>
+          </div>
+        </div>
+
+        <ul class="welcome-caps">
+          <li><span class="cap-i">🔐</span><b>Acts as you</b> — your cookies, auth, logged-in state</li>
+          <li><span class="cap-i">📡</span><b>Reverse-engineers APIs</b> from live network traffic</li>
+          <li><span class="cap-i">🧬</span><b>Full DOM access</b> — reads, extracts, modifies pages</li>
+          <li><span class="cap-i">🧠</span><b>Remembers each site</b> — selectors &amp; APIs, saved as specs</li>
+        </ul>
+
+        <div class="welcome-page-context">
+          <span class="page-context-dot"></span>
+          <span class="page-context-domain" id="welcome-domain">—</span>
+          <span class="page-context-title" id="welcome-title">Loading page…</span>
+          <span class="page-context-specs" id="welcome-specs"></span>
+        </div>
       </div>
-      <h2>Porthole for Claude</h2>
-      <p class="welcome-tagline">Browser control with Claude's intelligence.<br>Your session. Your auth. Full access.</p>
-      <div class="welcome-caps">
-        <div class="welcome-cap"><span class="cap-icon">🔐</span><div><strong>Your Session</strong><span>Acts as you — cookies, auth, logged-in state</span></div></div>
-        <div class="welcome-cap"><span class="cap-icon">📡</span><div><strong>API Discovery</strong><span>Reverse-engineers private APIs from traffic</span></div></div>
-        <div class="welcome-cap"><span class="cap-icon">🧬</span><div><strong>Full DOM Access</strong><span>Reads, modifies, extracts page structure</span></div></div>
-        <div class="welcome-cap"><span class="cap-icon">🧠</span><div><strong>Site Memory</strong><span>Learns selectors and patterns per-site</span></div></div>
-        <div class="welcome-cap"><span class="cap-icon">⏺</span><div><strong>Workflow Recording</strong><span>Record and replay multi-step automations</span></div></div>
-        <div class="welcome-cap"><span class="cap-icon">⚡</span><div><strong>Multi-step Chains</strong><span>Complex tasks across pages, persistent context</span></div></div>
-      </div>
-      <p class="welcome-tip">Try these to get started:</p>
+
+      <div class="welcome-prompts-label">Try on this page</div>
       <div class="welcome-prompts">
         ${getWelcomePromptsHtml()}
       </div>
     </div>
   `;
+}
+
+/**
+ * Populates the welcome screen's page context section with live tab + specs data.
+ * Call this after rendering the welcome HTML into the chat container.
+ *
+ * @param {Function} getSpecsCount - async fn(domain) => number of specs for that domain
+ */
+async function populateWelcomePageContext(getSpecsCount) {
+  const domainEl = document.getElementById('welcome-domain');
+  const titleEl = document.getElementById('welcome-title');
+  const specsEl = document.getElementById('welcome-specs');
+  if (!domainEl) return;
+
+  try {
+    const [tab] = await browser.tabs.query({ active: true, currentWindow: true });
+    if (!tab) return;
+
+    let domain = '';
+    try {
+      domain = new URL(tab.url).hostname.replace(/^www\./, '');
+    } catch {
+      domain = tab.url || '—';
+    }
+
+    domainEl.textContent = domain;
+    titleEl.textContent = tab.title || '';
+
+    if (specsEl && domain && getSpecsCount) {
+      try {
+        const count = await getSpecsCount(domain);
+        if (count > 0) {
+          specsEl.textContent = `${count} spec${count !== 1 ? 's' : ''} loaded`;
+          specsEl.classList.add('has-specs');
+        } else {
+          specsEl.textContent = 'No specs yet';
+          specsEl.classList.remove('has-specs');
+        }
+      } catch {
+        specsEl.textContent = '';
+      }
+    }
+  } catch (e) {
+    if (domainEl) domainEl.textContent = '—';
+    if (titleEl) titleEl.textContent = '';
+  }
 }
 
 /**
@@ -491,6 +561,7 @@ if (typeof window !== 'undefined') {
     getPromptsDropdownHtml,
     attachPromptButtonListeners,
     reattachChatEventListeners,
-    createDefaultTokenUsage
+    createDefaultTokenUsage,
+    populateWelcomePageContext
   };
 }
